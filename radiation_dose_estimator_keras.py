@@ -129,13 +129,16 @@ testing_targets = testing_set[target_label]
 
 learning_rate = 0.001
 n_epochs = 300
-n_neurons = 40
+n_neurons = 32
 batch_size = 5
-l1_reg = 0.1
+l1_reg = 0.0
 l2_reg = 0.0
 batch_norm = False
+dropout = None
 
 # build model
+
+del model
 
 model = k.models.Sequential()
 
@@ -145,18 +148,47 @@ model.add(k.layers.Dense(n_neurons,
                          activation = 'relu'))
 if batch_norm is True:
     model.add(k.layers.BatchNormalization())
+if dropout is not None:
+    model.add(k.layers.Dropout(dropout))
+    
+#model.add(k.layers.Dense(n_neurons,
+#                         kernel_regularizer = k.regularizers.l1_l2(l1 = l1_reg, l2 = l2_reg),
+#                         activation = 'relu'))
+#if batch_norm is True:
+#    model.add(k.layers.BatchNormalization())
+#if dropout is not None:
+#    model.add(k.layers.Dropout(dropout))
+    
+#model.add(k.layers.Dense(n_neurons,
+#                         kernel_regularizer = k.regularizers.l1_l2(l1 = l1_reg, l2 = l2_reg),
+#                         activation = 'relu'))
+#if batch_norm is True:
+#    model.add(k.layers.BatchNormalization())
+#if dropout is not None:
+#    model.add(k.layers.Dropout(dropout))
+    
+#model.add(k.layers.Dense(n_neurons,
+#                         kernel_regularizer = k.regularizers.l1_l2(l1 = l1_reg, l2 = l2_reg),
+#                         activation = 'relu'))
+#if batch_norm is True:
+#    model.add(k.layers.BatchNormalization())
+#if dropout is not None:
+#    model.add(k.layers.Dropout(dropout))
+
 model.add(k.layers.Dense(1))
 
 model.compile(optimizer = k.optimizers.Adam(lr = learning_rate),
               loss = 'mean_squared_error',
               metrics = ['mean_absolute_error'])
 
+model.summary()
+
 # train model
 
 class PrintDot(k.callbacks.Callback):
   def on_epoch_end(self, epoch, logs):
     if epoch % 100 == 0: print('')
-    print('.', end='')
+    print('.', end = '')
     
 timestr = time.strftime('%Y%m%d-%H%M%S')
 
@@ -205,6 +237,7 @@ variables_to_save = {'learning_rate': learning_rate,
                      'l1_reg': l1_reg,
                      'l2_reg': l2_reg,
                      'batch_norm': batch_norm,
+                     'dropout': dropout,
                      'nan_percent': nan_percent,
                      'split_ratio': split_ratio,
                      'timestr': timestr,
