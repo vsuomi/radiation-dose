@@ -44,13 +44,17 @@ pd.options.display.float_format = '{:.1f}'.format
 
 dataframe = pd.read_csv(r'C:\Users\visa\Documents\TYKS\Machine learning\Radiation dose\radiation-dose\radiation_dose_data.csv', sep = ',')
 
+#%% check for duplicates
+
+duplicates = any(dataframe.duplicated())
+
 #%% handle nan values
 
 nan_percent = dataframe.isnull().mean() * 100
-#dataframe = dataframe.dropna()
+dataframe = dataframe.dropna(subset = ['paino'])
 dataframe = dataframe.fillna(dataframe.median())
 
-#%% display NPV histogram
+#%% display target histogram
 
 dataframe['Korjattu_DAP_GYcm2'].hist(bins = 20)
 
@@ -64,7 +68,7 @@ feature_labels = ['paino', 'pituus', 'Patient_sex', 'Age',
                   'ind_stable_ap', 'ind_arrhythmia_settl', 'suonia_2_tai_yli', 
                   'lm_unprotected', 'Aiempi_ohitusleikkaus', 'im', 'lada', 
                   'ladb', 'ladc', 'lcxa', 'lcxb', 'lcxc', 'ld1', 'ld2',
-                  'lm', 'lom1', 'lom2', 'lpd', 'lpl', 'rcaa', 'rcab',
+                  'lm', 'lom1', 'lom2', 'lpl', 'rcaa', 'rcab',
                   'rcac', 'rita', 'rpd', 'rpl', 'vgrca_ag', 'vglca1_ag', 
                   'restenosis', 'stent_dimension', 'ball_dimension',
                   'add_stent_1', 'add_stent_2_tai_yli', 'sten_post_0', 
@@ -107,9 +111,7 @@ concat_dataframe = pd.concat([scaled_features, targets], axis = 1)
 
 #%% randomise and divive data for cross-validation
 
-# stratified splitting for unbalanced datasets
-
-split_ratio = 0.3
+split_ratio = 0.2
 training_set, holdout_set = train_test_split(concat_dataframe, test_size = split_ratio)
 validation_set, testing_set = train_test_split(holdout_set, test_size = 0.5)
 
@@ -128,17 +130,18 @@ testing_targets = testing_set[target_label]
 # define parameters
 
 learning_rate = 0.001
-n_epochs = 300
-n_neurons = 32
+n_epochs = 100
+n_neurons = 64
 batch_size = 5
-l1_reg = 0.0
-l2_reg = 0.0
+l1_reg = 0.5
+l2_reg = 0.1
 batch_norm = False
 dropout = None
 
 # build model
 
-del model
+if 'model' in locals():
+    del model
 
 model = k.models.Sequential()
 
@@ -239,6 +242,7 @@ variables_to_save = {'learning_rate': learning_rate,
                      'batch_norm': batch_norm,
                      'dropout': dropout,
                      'nan_percent': nan_percent,
+                     'duplicates': duplicates,
                      'split_ratio': split_ratio,
                      'timestr': timestr,
                      'history': history,
