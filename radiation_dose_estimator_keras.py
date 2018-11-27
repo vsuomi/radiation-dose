@@ -66,15 +66,28 @@ feature_labels = ['paino', 'pituus', 'Patient_sex', 'Age',
                   'ind_pci_in_stemi', 'ind_flap_failure', 'ind_nstemi', 
                   'ind_diag', 'ind_uap', 'ind_heart_failure', 'ind_stemi_other',
                   'ind_stable_ap', 'ind_arrhythmia_settl', 'suonia_2_tai_yli', 
-                  'lm_unprotected', 'Aiempi_ohitusleikkaus', 'im', 'lada', 
-                  'ladb', 'ladc', 'lcxa', 'lcxb', 'lcxc', 'ld1', 'ld2',
-                  'lm', 'lom1', 'lom2', 'lpl', 'rcaa', 'rcab',
-                  'rcac', 'rita', 'rpd', 'rpl', 'vgrca_ag', 'vglca1_ag', 
-                  'restenosis', 'stent_dimension', 'ball_dimension',
+                  'lm_unprotected', 'Aiempi_ohitusleikkaus', 
+                  'restenosis',
                   'add_stent_1', 'add_stent_2_tai_yli', 'sten_post_0', 
                   'sten_post_25', 'sten_post_60', 'sten_post_85', 'sten_post_100',
                   'sten_pre_100', 'sten_pre_85', 'sten_pre_60', 'AHA_a', 'AHA_b1',
-                  'AHA_b2', 'AHA_c', 'AHA_cto', 'IVUS', 'OCT']
+                  'AHA_b2', 'AHA_c', 'AHA_cto']
+
+#feature_labels = ['paino', 'pituus', 'Patient_sex', 'Age', 
+#                  'I20.81_I21.01_I21.11_or_I21.41', 'FN1AC', 'FN2BA',
+#                  'FN2AA', 'TFC00', 'n_tmp_1', 'n_tmp_2', 'n_tmp_3', 
+#                  'ind_pci_in_stemi', 'ind_flap_failure', 'ind_nstemi', 
+#                  'ind_diag', 'ind_uap', 'ind_heart_failure', 'ind_stemi_other',
+#                  'ind_stable_ap', 'ind_arrhythmia_settl', 'suonia_2_tai_yli', 
+#                  'lm_unprotected', 'Aiempi_ohitusleikkaus', 'im', 'lada', 
+#                  'ladb', 'ladc', 'lcxa', 'lcxb', 'lcxc', 'ld1', 'ld2',
+#                  'lm', 'lom1', 'lom2', 'lpl', 'rcaa', 'rcab',
+#                  'rcac', 'rita', 'rpd', 'rpl', 'vgrca_ag', 'vglca1_ag', 
+#                  'restenosis', 'stent_dimension', 'ball_dimension',
+#                  'add_stent_1', 'add_stent_2_tai_yli', 'sten_post_0', 
+#                  'sten_post_25', 'sten_post_60', 'sten_post_85', 'sten_post_100',
+#                  'sten_pre_100', 'sten_pre_85', 'sten_pre_60', 'AHA_a', 'AHA_b1',
+#                  'AHA_b2', 'AHA_c', 'AHA_cto', 'IVUS', 'OCT']
 
 #feature_labels = ['paino', 'pituus', 'Patient_sex', 'Age', 
 #                  'I20.81_I21.01_I21.11_or_I21.41', 'I35.0', 'FN1AC', 'FN2BA',
@@ -132,6 +145,7 @@ testing_targets = testing_set[target_label]
 learning_rate = 0.001
 n_epochs = 100
 n_neurons = 64
+n_layers = 1
 batch_size = 5
 l1_reg = 0.5
 l2_reg = 0.1
@@ -153,30 +167,17 @@ if batch_norm is True:
     model.add(k.layers.BatchNormalization())
 if dropout is not None:
     model.add(k.layers.Dropout(dropout))
-    
-#model.add(k.layers.Dense(n_neurons,
-#                         kernel_regularizer = k.regularizers.l1_l2(l1 = l1_reg, l2 = l2_reg),
-#                         activation = 'relu'))
-#if batch_norm is True:
-#    model.add(k.layers.BatchNormalization())
-#if dropout is not None:
-#    model.add(k.layers.Dropout(dropout))
-    
-#model.add(k.layers.Dense(n_neurons,
-#                         kernel_regularizer = k.regularizers.l1_l2(l1 = l1_reg, l2 = l2_reg),
-#                         activation = 'relu'))
-#if batch_norm is True:
-#    model.add(k.layers.BatchNormalization())
-#if dropout is not None:
-#    model.add(k.layers.Dropout(dropout))
-    
-#model.add(k.layers.Dense(n_neurons,
-#                         kernel_regularizer = k.regularizers.l1_l2(l1 = l1_reg, l2 = l2_reg),
-#                         activation = 'relu'))
-#if batch_norm is True:
-#    model.add(k.layers.BatchNormalization())
-#if dropout is not None:
-#    model.add(k.layers.Dropout(dropout))
+
+i = 1   
+while i < n_layers:
+    model.add(k.layers.Dense(n_neurons,
+                             kernel_regularizer = k.regularizers.l1_l2(l1 = l1_reg, l2 = l2_reg),
+                             activation = 'relu'))
+    if batch_norm is True:
+        model.add(k.layers.BatchNormalization())
+    if dropout is not None:
+        model.add(k.layers.Dropout(dropout))
+    i += 1
 
 model.add(k.layers.Dense(1))
 
@@ -236,6 +237,7 @@ f1.savefig(model_dir + '\\' + 'evaluation_metrics.pdf', dpi = 600, format = 'pdf
 variables_to_save = {'learning_rate': learning_rate,
                      'n_epochs': n_epochs,
                      'n_neurons': n_neurons,
+                     'n_layers': n_layers,
                      'batch_size': batch_size,
                      'l1_reg': l1_reg,
                      'l2_reg': l2_reg,
