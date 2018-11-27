@@ -58,9 +58,17 @@ dataframe = dataframe.fillna(dataframe.median())
 
 dataframe['Korjattu_DAP_GYcm2'].hist(bins = 20)
 
+#%% create synthetic features
+
+dataframe['BSA'] = 0.007184 * dataframe['paino'].pow(0.425) * dataframe['pituus'].pow(0.725)
+
+#%% calculate correlation matrix
+
+corr_mat = dataframe.corr()
+
 #%% define feature and target labels
 
-feature_labels = ['paino', 'pituus', 'Patient_sex', 'Age', 
+feature_labels = ['BSA', 'Patient_sex', 'Age', 
                   'I20.81_I21.01_I21.11_or_I21.41', 'FN1AC', 'FN2BA',
                   'FN2AA', 'TFC00', 'n_tmp_1', 'n_tmp_2', 'n_tmp_3', 
                   'ind_pci_in_stemi', 'ind_flap_failure', 'ind_nstemi', 
@@ -68,10 +76,20 @@ feature_labels = ['paino', 'pituus', 'Patient_sex', 'Age',
                   'ind_stable_ap', 'ind_arrhythmia_settl', 'suonia_2_tai_yli', 
                   'lm_unprotected', 'Aiempi_ohitusleikkaus', 
                   'restenosis',
-                  'add_stent_1', 'add_stent_2_tai_yli', 'sten_post_0', 
-                  'sten_post_25', 'sten_post_60', 'sten_post_85', 'sten_post_100',
-                  'sten_pre_100', 'sten_pre_85', 'sten_pre_60', 'AHA_a', 'AHA_b1',
-                  'AHA_b2', 'AHA_c', 'AHA_cto']
+                  'IVUS', 'OCT']
+
+#feature_labels = ['paino', 'pituus', 'Patient_sex', 'Age', 
+#                  'I20.81_I21.01_I21.11_or_I21.41', 'FN1AC', 'FN2BA',
+#                  'FN2AA', 'TFC00', 'n_tmp_1', 'n_tmp_2', 'n_tmp_3', 
+#                  'ind_pci_in_stemi', 'ind_flap_failure', 'ind_nstemi', 
+#                  'ind_diag', 'ind_uap', 'ind_heart_failure', 'ind_stemi_other',
+#                  'ind_stable_ap', 'ind_arrhythmia_settl', 'suonia_2_tai_yli', 
+#                  'lm_unprotected', 'Aiempi_ohitusleikkaus', 
+#                  'restenosis',
+#                  'add_stent_1', 'add_stent_2_tai_yli', 'sten_post_0', 
+#                  'sten_post_25', 'sten_post_60', 'sten_post_85', 'sten_post_100',
+#                  'sten_pre_100', 'sten_pre_85', 'sten_pre_60', 'AHA_a', 'AHA_b1',
+#                  'AHA_b2', 'AHA_c', 'AHA_cto', 'IVUS', 'OCT']
 
 #feature_labels = ['paino', 'pituus', 'Patient_sex', 'Age', 
 #                  'I20.81_I21.01_I21.11_or_I21.41', 'FN1AC', 'FN2BA',
@@ -245,6 +263,7 @@ variables_to_save = {'learning_rate': learning_rate,
                      'dropout': dropout,
                      'nan_percent': nan_percent,
                      'duplicates': duplicates,
+                     'corr_mat': corr_mat,
                      'split_ratio': split_ratio,
                      'timestr': timestr,
                      'history': history,
