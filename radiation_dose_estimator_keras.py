@@ -51,45 +51,24 @@ duplicates = any(dataframe.duplicated())
 #%% handle nan values
 
 nan_percent = dataframe.isnull().mean() * 100
-dataframe = dataframe.dropna(subset = ['paino'])
+#dataframe = dataframe.dropna(subset = ['paino'])
 dataframe = dataframe.fillna(dataframe.median())
-
-#%% display target histogram
-
-dataframe['Korjattu_DAP_GYcm2'].hist(bins = 20)
 
 #%% create synthetic features
 
 dataframe['BSA'] = 0.007184 * dataframe['paino'].pow(0.425) * dataframe['pituus'].pow(0.725)
 
-#%% calculate correlation matrix
+#%% calculate correlation and standard deviation matrices
 
 corr_mat = dataframe.corr()
+std_mat = dataframe.std()
 
 #%% define feature and target labels
 
-feature_labels = ['BSA', 'Patient_sex', 'Age', 
-                  'I20.81_I21.01_I21.11_or_I21.41', 'FN1AC', 'FN2BA',
-                  'FN2AA', 'TFC00', 'n_tmp_1', 'n_tmp_2', 'n_tmp_3', 
-                  'ind_pci_in_stemi', 'ind_flap_failure', 'ind_nstemi', 
-                  'ind_diag', 'ind_uap', 'ind_heart_failure', 'ind_stemi_other',
-                  'ind_stable_ap', 'ind_arrhythmia_settl', 'suonia_2_tai_yli', 
-                  'lm_unprotected', 'Aiempi_ohitusleikkaus', 
-                  'restenosis',
-                  'IVUS', 'OCT']
-
-#feature_labels = ['paino', 'pituus', 'Patient_sex', 'Age', 
-#                  'I20.81_I21.01_I21.11_or_I21.41', 'FN1AC', 'FN2BA',
-#                  'FN2AA', 'TFC00', 'n_tmp_1', 'n_tmp_2', 'n_tmp_3', 
-#                  'ind_pci_in_stemi', 'ind_flap_failure', 'ind_nstemi', 
-#                  'ind_diag', 'ind_uap', 'ind_heart_failure', 'ind_stemi_other',
-#                  'ind_stable_ap', 'ind_arrhythmia_settl', 'suonia_2_tai_yli', 
-#                  'lm_unprotected', 'Aiempi_ohitusleikkaus', 
-#                  'restenosis',
-#                  'add_stent_1', 'add_stent_2_tai_yli', 'sten_post_0', 
-#                  'sten_post_25', 'sten_post_60', 'sten_post_85', 'sten_post_100',
-#                  'sten_pre_100', 'sten_pre_85', 'sten_pre_60', 'AHA_a', 'AHA_b1',
-#                  'AHA_b2', 'AHA_c', 'AHA_cto', 'IVUS', 'OCT']
+feature_labels = ['BSA',
+                  'FN1AC', 
+                  'rcaa',
+                  'sten_pre_100']
 
 #feature_labels = ['paino', 'pituus', 'Patient_sex', 'Age', 
 #                  'I20.81_I21.01_I21.11_or_I21.41', 'FN1AC', 'FN2BA',
@@ -130,6 +109,11 @@ target_label = ['Korjattu_DAP_GYcm2']
 features = dataframe[feature_labels]
 targets = dataframe[target_label]
 
+#%% show histograms
+
+features.hist()
+targets.hist()
+
 #%% scale features
 
 scaled_features = pd.DataFrame(sp.stats.mstats.zscore(features),
@@ -165,7 +149,7 @@ n_epochs = 100
 n_neurons = 64
 n_layers = 1
 batch_size = 5
-l1_reg = 0.5
+l1_reg = 0.1
 l2_reg = 0.1
 batch_norm = False
 dropout = None
@@ -264,6 +248,7 @@ variables_to_save = {'learning_rate': learning_rate,
                      'nan_percent': nan_percent,
                      'duplicates': duplicates,
                      'corr_mat': corr_mat,
+                     'std_mat': std_mat,
                      'split_ratio': split_ratio,
                      'timestr': timestr,
                      'history': history,
