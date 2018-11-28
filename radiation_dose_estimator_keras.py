@@ -51,7 +51,8 @@ duplicates = any(dataframe.duplicated())
 #%% handle nan values
 
 nan_percent = dataframe.isnull().mean() * 100
-#dataframe = dataframe.dropna(subset = ['paino'])
+dataframe = dataframe.dropna(subset = ['paino'])
+dataframe = dataframe.dropna(subset = ['pituus'])
 dataframe = dataframe.fillna(dataframe.median())
 
 #%% create synthetic features
@@ -65,10 +66,11 @@ std_mat = dataframe.std()
 
 #%% define feature and target labels
 
-feature_labels = ['BSA',
-                  'FN1AC', 
-                  'rcaa',
-                  'sten_pre_100']
+feature_labels = ['BSA', 'Patient_sex', 'Age',
+                  'FN1AC', 'FN2BA',
+                  'FN2AA', 'TFC00',
+                  'n_tmp_1', 'n_tmp_2', 'n_tmp_3',
+                  'Aiempi_ohitusleikkaus']
 
 #feature_labels = ['paino', 'pituus', 'Patient_sex', 'Age', 
 #                  'I20.81_I21.01_I21.11_or_I21.41', 'FN1AC', 'FN2BA',
@@ -111,14 +113,24 @@ targets = dataframe[target_label]
 
 #%% show histograms
 
-features.hist()
+features.hist(figsize = (18, 18))
 targets.hist()
 
 #%% scale features
 
-scaled_features = pd.DataFrame(sp.stats.mstats.zscore(features),
-                               columns = list(features), 
-                               index = features.index, dtype = float)
+# z-score
+
+#scaled_features = pd.DataFrame(sp.stats.mstats.zscore(features),
+#                               columns = list(features), 
+#                               index = features.index, dtype = float)
+
+# log (for skewed data)
+
+scaled_features = np.log1p(features)
+
+#%% log transform targets (for skewed data)
+
+targets = np.log1p(targets)
 
 #%% combine dataframes
 
@@ -145,12 +157,12 @@ testing_targets = testing_set[target_label]
 # define parameters
 
 learning_rate = 0.001
-n_epochs = 100
+n_epochs = 200
 n_neurons = 64
-n_layers = 1
+n_layers = 2
 batch_size = 5
-l1_reg = 0.1
-l2_reg = 0.1
+l1_reg = 0.0
+l2_reg = 0.01
 batch_norm = False
 dropout = None
 
