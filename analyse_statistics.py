@@ -40,7 +40,7 @@ def analyse_statistics(sample_data):
     (mu, sigma) = sp.stats.norm.fit(sample_data)
     plt.legend(['Normal dist. ($\mu=$ {:.2f} and $\sigma=$ {:.2f} )'.format(mu, sigma)],
                 loc='best')
-    plt.ylabel('Count')
+    plt.ylabel('Frequency')
     plt.xlabel('Target value')
     plt.title(sample_data.columns.values[0])
     
