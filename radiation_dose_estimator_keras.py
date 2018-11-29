@@ -34,6 +34,7 @@ import os
 
 from save_load_variables import save_load_variables
 from plot_regression_performance import plot_regression_performance
+from analyse_statistics import analyse_statistics
 
 #%% define logging and data display format
 
@@ -51,8 +52,8 @@ duplicates = any(dataframe.duplicated())
 #%% handle nan values
 
 nan_percent = dataframe.isnull().mean() * 100
-dataframe = dataframe.dropna(subset = ['paino'])
-dataframe = dataframe.dropna(subset = ['pituus'])
+#dataframe = dataframe.dropna(subset = ['paino'])
+#dataframe = dataframe.dropna(subset = ['pituus'])
 dataframe = dataframe.fillna(dataframe.median())
 
 #%% create synthetic features
@@ -66,27 +67,27 @@ std_mat = dataframe.std()
 
 #%% define feature and target labels
 
-feature_labels = ['BSA', 'Patient_sex', 'Age',
-                  'FN1AC', 'FN2BA',
-                  'FN2AA', 'TFC00',
-                  'n_tmp_1', 'n_tmp_2', 'n_tmp_3',
-                  'Aiempi_ohitusleikkaus']
+#feature_labels = ['BSA', 'Patient_sex', 'Age',
+#                  'FN1AC', 'FN2BA',
+#                  'FN2AA', 'TFC00',
+#                  'n_tmp_1', 'n_tmp_2', 'n_tmp_3',
+#                  'Aiempi_ohitusleikkaus']
 
-#feature_labels = ['paino', 'pituus', 'Patient_sex', 'Age', 
-#                  'I20.81_I21.01_I21.11_or_I21.41', 'FN1AC', 'FN2BA',
-#                  'FN2AA', 'TFC00', 'n_tmp_1', 'n_tmp_2', 'n_tmp_3', 
-#                  'ind_pci_in_stemi', 'ind_flap_failure', 'ind_nstemi', 
-#                  'ind_diag', 'ind_uap', 'ind_heart_failure', 'ind_stemi_other',
-#                  'ind_stable_ap', 'ind_arrhythmia_settl', 'suonia_2_tai_yli', 
-#                  'lm_unprotected', 'Aiempi_ohitusleikkaus', 'im', 'lada', 
-#                  'ladb', 'ladc', 'lcxa', 'lcxb', 'lcxc', 'ld1', 'ld2',
-#                  'lm', 'lom1', 'lom2', 'lpl', 'rcaa', 'rcab',
-#                  'rcac', 'rita', 'rpd', 'rpl', 'vgrca_ag', 'vglca1_ag', 
-#                  'restenosis', 'stent_dimension', 'ball_dimension',
-#                  'add_stent_1', 'add_stent_2_tai_yli', 'sten_post_0', 
-#                  'sten_post_25', 'sten_post_60', 'sten_post_85', 'sten_post_100',
-#                  'sten_pre_100', 'sten_pre_85', 'sten_pre_60', 'AHA_a', 'AHA_b1',
-#                  'AHA_b2', 'AHA_c', 'AHA_cto', 'IVUS', 'OCT']
+feature_labels = ['paino', 'pituus', 'Patient_sex', 'Age', 
+                  'I20.81_I21.01_I21.11_or_I21.41', 'FN1AC', 'FN2BA',
+                  'FN2AA', 'TFC00', 'n_tmp_1', 'n_tmp_2', 'n_tmp_3', 
+                  'ind_pci_in_stemi', 'ind_flap_failure', 'ind_nstemi', 
+                  'ind_diag', 'ind_uap', 'ind_heart_failure', 'ind_stemi_other',
+                  'ind_stable_ap', 'ind_arrhythmia_settl', 'suonia_2_tai_yli', 
+                  'lm_unprotected', 'Aiempi_ohitusleikkaus', 'im', 'lada', 
+                  'ladb', 'ladc', 'lcxa', 'lcxb', 'lcxc', 'ld1', 'ld2',
+                  'lm', 'lom1', 'lom2', 'lpl', 'rcaa', 'rcab',
+                  'rcac', 'rita', 'rpd', 'rpl', 'vgrca_ag', 'vglca1_ag', 
+                  'restenosis', 'stent_dimension', 'ball_dimension',
+                  'add_stent_1', 'add_stent_2_tai_yli', 'sten_post_0', 
+                  'sten_post_25', 'sten_post_60', 'sten_post_85', 'sten_post_100',
+                  'sten_pre_100', 'sten_pre_85', 'sten_pre_60', 'AHA_a', 'AHA_b1',
+                  'AHA_b2', 'AHA_c', 'AHA_cto', 'IVUS', 'OCT']
 
 #feature_labels = ['paino', 'pituus', 'Patient_sex', 'Age', 
 #                  'I20.81_I21.01_I21.11_or_I21.41', 'I35.0', 'FN1AC', 'FN2BA',
@@ -111,10 +112,9 @@ target_label = ['Korjattu_DAP_GYcm2']
 features = dataframe[feature_labels]
 targets = dataframe[target_label]
 
-#%% show histograms
+#%% analyse target
 
-features.hist(figsize = (18, 18))
-targets.hist()
+analyse_statistics(targets)
 
 #%% scale features
 
@@ -157,14 +157,14 @@ testing_targets = testing_set[target_label]
 # define parameters
 
 learning_rate = 0.001
-n_epochs = 200
+n_epochs = 100
 n_neurons = 64
-n_layers = 2
+n_layers = 6
 batch_size = 5
 l1_reg = 0.0
-l2_reg = 0.01
+l2_reg = 0.0
 batch_norm = False
-dropout = None
+dropout = 0.2
 
 # build model
 
@@ -231,10 +231,18 @@ validation_predictions = model.predict(validation_features)
 validation_predictions = pd.DataFrame(validation_predictions, columns = target_label,
                                       index = validation_features.index, dtype = float)
 
+# convert targets to linear units (for skewed data)
+
+training_targets_lin = np.exp(training_targets) - 1
+validation_targets_lin = np.exp(validation_targets) - 1
+
+training_predictions_lin = np.exp(training_predictions) - 1
+validation_predictions_lin = np.exp(validation_predictions) - 1
+
 # plot training performance
 
-f1 = plot_regression_performance(history, training_targets, training_predictions, 
-                                 validation_targets, validation_predictions)
+f1 = plot_regression_performance(history, training_targets_lin, training_predictions_lin, 
+                                 validation_targets_lin, validation_predictions_lin)
 
 #%% save model
 
