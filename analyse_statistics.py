@@ -32,7 +32,7 @@ def analyse_statistics(sample_data):
 
     plt.figure(figsize = (12, 4))
     plt.subplot(1, 2, 1)
-    sns.distplot(sample_data , fit = sp.stats.norm)
+    sns.distplot(sample_data, fit = sp.stats.norm)
     plt.grid()
     
     # get the fitted parameters used by the function
