@@ -35,6 +35,7 @@ import os
 from save_load_variables import save_load_variables
 from plot_regression_performance import plot_regression_performance
 from analyse_statistics import analyse_statistics
+from analyse_correlation import analyse_correlation
 
 #%% define logging and data display format
 
@@ -51,7 +52,7 @@ duplicates = any(dataframe.duplicated())
 
 #%% handle nan values
 
-nan_percent = dataframe.isnull().mean() * 100
+nan_percent = pd.DataFrame(dataframe.isnull().mean() * 100, columns = ['% of NaN'])
 #dataframe = dataframe.dropna(subset = ['paino'])
 #dataframe = dataframe.dropna(subset = ['pituus'])
 dataframe = dataframe.fillna(dataframe.median())
@@ -62,8 +63,7 @@ dataframe['BSA'] = 0.007184 * dataframe['paino'].pow(0.425) * dataframe['pituus'
 
 #%% calculate correlation and standard deviation matrices
 
-corr_mat = dataframe.corr()
-std_mat = dataframe.std()
+std_mat, corr_mat, most_corr = analyse_correlation(dataframe, 10, 'Korjattu_DAP_GYcm2')
 
 #%% define feature and target labels
 
@@ -164,7 +164,7 @@ batch_size = 5
 l1_reg = 0.0
 l2_reg = 0.0
 batch_norm = False
-dropout = 0.2
+dropout = None
 
 # build model
 
@@ -267,6 +267,7 @@ variables_to_save = {'learning_rate': learning_rate,
                      'dropout': dropout,
                      'nan_percent': nan_percent,
                      'duplicates': duplicates,
+                     'most_corr': most_corr,
                      'corr_mat': corr_mat,
                      'std_mat': std_mat,
                      'split_ratio': split_ratio,
