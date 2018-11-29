@@ -12,6 +12,10 @@ Created on Thu Nov 29 11:58:10 2018
     
     This function is used to analyse the distribution of the target/feature
     
+    Input:
+        
+        sample_data: Pandas dataframe of sample data
+    
 '''
 
 #%% import necessary libraries
@@ -38,7 +42,7 @@ def analyse_statistics(sample_data):
                 loc='best')
     plt.ylabel('Count')
     plt.xlabel('Target value')
-    plt.title('Target distribution')
+    plt.title(sample_data.columns.values[0])
     
     plt.subplot(1, 2, 2)
     sp.stats.probplot(sample_data.T.squeeze(), plot = plt)
