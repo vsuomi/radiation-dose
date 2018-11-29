@@ -53,6 +53,7 @@ duplicates = any(dataframe.duplicated())
 #%% handle nan values
 
 nan_percent = pd.DataFrame(dataframe.isnull().mean() * 100, columns = ['% of NaN'])
+#dataframe = dataframe.dropna()
 #dataframe = dataframe.dropna(subset = ['paino'])
 #dataframe = dataframe.dropna(subset = ['pituus'])
 dataframe = dataframe.fillna(dataframe.median())
@@ -128,13 +129,17 @@ analyse_statistics(targets)
 
 scaled_features = np.log1p(features)
 
+# box cox (for skewed data)
+
+#scaled_features = sp.special.boxcox1p(features, 0.15)
+
 #%% log transform targets (for skewed data)
 
-targets = np.log1p(targets)
+scaled_targets = np.log1p(targets)
 
 #%% combine dataframes
 
-concat_dataframe = pd.concat([scaled_features, targets], axis = 1)
+concat_dataframe = pd.concat([scaled_features, scaled_targets], axis = 1)
 
 #%% randomise and divive data for cross-validation
 
