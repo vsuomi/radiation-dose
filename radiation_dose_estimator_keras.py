@@ -52,11 +52,89 @@ duplicates = any(dataframe.duplicated())
 
 #%% handle nan values
 
+# calculate nan percent for each label
+
 nan_percent = pd.DataFrame(dataframe.isnull().mean() * 100, columns = ['% of NaN'])
+
+# drop nan values
+
 #dataframe = dataframe.dropna()
 #dataframe = dataframe.dropna(subset = ['paino'])
 #dataframe = dataframe.dropna(subset = ['pituus'])
-dataframe = dataframe.fillna(dataframe.median())
+
+# fill in categorical values
+
+#dataframe['add_stent_1', 'add_stent_2_tai_yli']
+
+sten_post = dataframe[['sten_post_0', 'sten_post_25', 'sten_post_60', 
+                       'sten_post_85', 'sten_post_100']].idxmax(axis = 1)
+sten_post = sten_post.fillna(sten_post.mode()[0])
+sten_post = pd.get_dummies(sten_post).astype(int)
+sten_post = sten_post[['sten_post_0', 'sten_post_25', 'sten_post_60', 
+                       'sten_post_85', 'sten_post_100']]
+
+sten_pre = dataframe[['sten_pre_100', 'sten_pre_85', 'sten_pre_60']].idxmax(axis = 1)
+sten_pre = sten_pre.fillna(sten_pre.mode()[0])
+sten_pre = pd.get_dummies(sten_pre).astype(int)
+sten_pre = sten_pre[['sten_pre_100', 'sten_pre_85', 'sten_pre_60']]
+
+AHA = dataframe[['AHA_a', 'AHA_b1', 'AHA_b2', 'AHA_c', 'AHA_cto']].idxmax(axis = 1)
+AHA = AHA.fillna(AHA.mode()[0])
+AHA = pd.get_dummies(AHA).astype(int)
+AHA = AHA[['AHA_a', 'AHA_b1', 'AHA_b2', 'AHA_c', 'AHA_cto']]
+
+# replace missing values
+
+dataframe['paino'] = dataframe['paino'].fillna(dataframe['paino'].mean())
+dataframe['pituus'] = dataframe['pituus'].fillna(dataframe['pituus'].mean())
+dataframe['ind_pci_in_stemi'] = dataframe['ind_pci_in_stemi'].fillna(dataframe['ind_pci_in_stemi'].mode()[0])
+dataframe['ind_flap_failure'] = dataframe['ind_flap_failure'].fillna(dataframe['ind_flap_failure'].mode()[0])
+dataframe['ind_nstemi'] = dataframe['ind_nstemi'].fillna(dataframe['ind_nstemi'].mode()[0])
+dataframe['ind_diag'] = dataframe['ind_diag'].fillna(dataframe['ind_diag'].mode()[0])
+dataframe['ind_uap'] = dataframe['ind_uap'].fillna(dataframe['ind_uap'].mode()[0])
+dataframe['ind_heart_failure'] = dataframe['ind_heart_failure'].fillna(dataframe['ind_heart_failure'].mode()[0])
+dataframe['ind_stemi_other'] = dataframe['ind_stemi_other'].fillna(dataframe['ind_stemi_other'].mode()[0])
+dataframe['ind_stable_ap'] = dataframe['ind_stable_ap'].fillna(dataframe['ind_stable_ap'].mode()[0])
+dataframe['ind_arrhythmia_settl'] = dataframe['ind_arrhythmia_settl'].fillna(dataframe['ind_arrhythmia_settl'].mode()[0])
+dataframe['suonia_2_tai_yli'] = dataframe['suonia_2_tai_yli'].fillna(dataframe['suonia_2_tai_yli'].mode()[0])
+dataframe['lm_unprotected'] = dataframe['lm_unprotected'].fillna(dataframe['lm_unprotected'].mode()[0])
+dataframe['im'] = dataframe['im'].fillna(dataframe['im'].mode()[0])
+dataframe['lada'] = dataframe['lada'].fillna(dataframe['lada'].mode()[0])
+dataframe['ladb'] = dataframe['ladb'].fillna(dataframe['ladb'].mode()[0])
+dataframe['ladc'] = dataframe['ladc'].fillna(dataframe['ladc'].mode()[0])
+dataframe['lcxa'] = dataframe['lcxa'].fillna(dataframe['lcxa'].mode()[0])
+dataframe['lcxb'] = dataframe['lcxb'].fillna(dataframe['lcxb'].mode()[0])
+dataframe['lcxc'] = dataframe['lcxc'].fillna(dataframe['lcxc'].mode()[0])
+dataframe['ld1'] = dataframe['ld1'].fillna(dataframe['ld1'].mode()[0])
+dataframe['ld2'] = dataframe['ld2'].fillna(dataframe['ld2'].mode()[0])
+dataframe['lita'] = dataframe['lita'].fillna(dataframe['lita'].mode()[0])
+dataframe['lm'] = dataframe['lm'].fillna(dataframe['lm'].mode()[0])
+dataframe['lom1'] = dataframe['lom1'].fillna(dataframe['lom1'].mode()[0])
+dataframe['lom2'] = dataframe['lom2'].fillna(dataframe['lom2'].mode()[0])
+dataframe['lpd'] = dataframe['lpd'].fillna(dataframe['lpd'].mode()[0])
+dataframe['lpl'] = dataframe['lpl'].fillna(dataframe['lpl'].mode()[0])
+dataframe['ram_rv'] = dataframe['ram_rv'].fillna(dataframe['ram_rv'].mode()[0])
+dataframe['rcaa'] = dataframe['rcaa'].fillna(dataframe['rcaa'].mode()[0])
+dataframe['rcab'] = dataframe['rcab'].fillna(dataframe['rcab'].mode()[0])
+dataframe['rcac'] = dataframe['rcac'].fillna(dataframe['rcac'].mode()[0])
+dataframe['rita'] = dataframe['rita'].fillna(dataframe['rita'].mode()[0])
+dataframe['rpd'] = dataframe['rpd'].fillna(dataframe['rpd'].mode()[0])
+dataframe['rpl'] = dataframe['rpl'].fillna(dataframe['rpl'].mode()[0])
+dataframe['vgrca_ag'] = dataframe['vgrca_ag'].fillna(dataframe['vgrca_ag'].mode()[0])
+dataframe['vglca1_ag'] = dataframe['vglca1_ag'].fillna(dataframe['vglca1_ag'].mode()[0])
+dataframe['vglca2_ag'] = dataframe['vglca2_ag'].fillna(dataframe['vglca2_ag'].mode()[0])
+dataframe['restenosis'] = dataframe['restenosis'].fillna(dataframe['restenosis'].mode()[0])
+dataframe['stent_dimension'] = dataframe['stent_dimension'].fillna(dataframe['stent_dimension'].mean())
+dataframe['ball_dimension'] = dataframe['ball_dimension'].fillna(dataframe['ball_dimension'].mean())
+dataframe['add_stent_1'] = dataframe['add_stent_1'].fillna(0)
+dataframe['add_stent_2_tai_yli'] = dataframe['add_stent_2_tai_yli'].fillna(0)
+dataframe[['sten_post_0', 'sten_post_25', 'sten_post_60', 'sten_post_85', 'sten_post_100']] = sten_post
+dataframe[['sten_pre_100', 'sten_pre_85', 'sten_pre_60']] = sten_pre
+dataframe[['AHA_a', 'AHA_b1', 'AHA_b2', 'AHA_c', 'AHA_cto']] = AHA
+
+# check for nan values
+
+dataframe.isnull().values.any()
 
 #%% create synthetic features
 
@@ -68,27 +146,9 @@ std_mat, corr_mat, most_corr = analyse_correlation(dataframe, 10, 'Korjattu_DAP_
 
 #%% define feature and target labels
 
-#feature_labels = ['BSA', 'Patient_sex', 'Age',
-#                  'FN1AC', 'FN2BA',
-#                  'FN2AA', 'TFC00',
-#                  'n_tmp_1', 'n_tmp_2', 'n_tmp_3',
-#                  'Aiempi_ohitusleikkaus']
-
-feature_labels = ['paino', 'pituus', 'Patient_sex', 'Age', 
-                  'I20.81_I21.01_I21.11_or_I21.41', 'FN1AC', 'FN2BA',
-                  'FN2AA', 'TFC00', 'n_tmp_1', 'n_tmp_2', 'n_tmp_3', 
-                  'ind_pci_in_stemi', 'ind_flap_failure', 'ind_nstemi', 
-                  'ind_diag', 'ind_uap', 'ind_heart_failure', 'ind_stemi_other',
-                  'ind_stable_ap', 'ind_arrhythmia_settl', 'suonia_2_tai_yli', 
-                  'lm_unprotected', 'Aiempi_ohitusleikkaus', 'im', 'lada', 
-                  'ladb', 'ladc', 'lcxa', 'lcxb', 'lcxc', 'ld1', 'ld2',
-                  'lm', 'lom1', 'lom2', 'lpl', 'rcaa', 'rcab',
-                  'rcac', 'rita', 'rpd', 'rpl', 'vgrca_ag', 'vglca1_ag', 
-                  'restenosis', 'stent_dimension', 'ball_dimension',
-                  'add_stent_1', 'add_stent_2_tai_yli', 'sten_post_0', 
-                  'sten_post_25', 'sten_post_60', 'sten_post_85', 'sten_post_100',
-                  'sten_pre_100', 'sten_pre_85', 'sten_pre_60', 'AHA_a', 'AHA_b1',
-                  'AHA_b2', 'AHA_c', 'AHA_cto', 'IVUS', 'OCT']
+feature_labels = ['AHA_cto', 'sten_pre_100', 'suonia_2_tai_yli', 'Patient_sex',
+                  'FN2BA', 'I20.81_I21.01_I21.11_or_I21.41', 'add_stent_2_tai_yli',
+                  'sten_post_100', 'AHA_c']
 
 #feature_labels = ['paino', 'pituus', 'Patient_sex', 'Age', 
 #                  'I20.81_I21.01_I21.11_or_I21.41', 'I35.0', 'FN1AC', 'FN2BA',
