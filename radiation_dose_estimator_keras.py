@@ -36,6 +36,7 @@ from save_load_variables import save_load_variables
 from plot_regression_performance import plot_regression_performance
 from analyse_statistics import analyse_statistics
 from analyse_correlation import analyse_correlation
+from analyse_feature_correlation import analyse_feature_correlation
 
 #%% define logging and data display format
 
@@ -59,12 +60,10 @@ nan_percent = pd.DataFrame(dataframe.isnull().mean() * 100, columns = ['% of NaN
 # drop nan values
 
 #dataframe = dataframe.dropna()
-#dataframe = dataframe.dropna(subset = ['paino'])
+dataframe = dataframe.dropna(subset = ['paino'])
 #dataframe = dataframe.dropna(subset = ['pituus'])
 
-# fill in categorical values
-
-#dataframe['add_stent_1', 'add_stent_2_tai_yli']
+# fill in mutually exclusive categorical values
 
 sten_post = dataframe[['sten_post_0', 'sten_post_25', 'sten_post_60', 
                        'sten_post_85', 'sten_post_100']].idxmax(axis = 1)
@@ -144,11 +143,19 @@ dataframe['BSA'] = 0.007184 * dataframe['paino'].pow(0.425) * dataframe['pituus'
 
 std_mat, corr_mat, most_corr = analyse_correlation(dataframe, 10, 'Korjattu_DAP_GYcm2')
 
+#%% check individual feature correlation
+
+analyse_feature_correlation(dataframe, 'paino', 'Korjattu_DAP_GYcm2', False)
+analyse_feature_correlation(dataframe, 'Patient_sex', 'Korjattu_DAP_GYcm2', True)
+
 #%% define feature and target labels
 
-feature_labels = ['AHA_cto', 'sten_pre_100', 'suonia_2_tai_yli', 'Patient_sex',
-                  'FN2BA', 'I20.81_I21.01_I21.11_or_I21.41', 'add_stent_2_tai_yli',
-                  'sten_post_100', 'AHA_c']
+feature_labels = ['paino', 'Patient_sex', 'AHA_a', 'AHA_b1',
+                  'AHA_b2', 'AHA_c', 'AHA_cto']
+
+#feature_labels = ['AHA_cto', 'sten_pre_100', 'suonia_2_tai_yli', 'Patient_sex',
+#                  'FN2BA', 'I20.81_I21.01_I21.11_or_I21.41', 'add_stent_2_tai_yli',
+#                  'sten_post_100', 'AHA_c']
 
 #feature_labels = ['paino', 'pituus', 'Patient_sex', 'Age', 
 #                  'I20.81_I21.01_I21.11_or_I21.41', 'I35.0', 'FN1AC', 'FN2BA',
@@ -224,10 +231,10 @@ testing_targets = testing_set[target_label]
 learning_rate = 0.001
 n_epochs = 100
 n_neurons = 64
-n_layers = 6
+n_layers = 2
 batch_size = 5
 l1_reg = 0.0
-l2_reg = 0.0
+l2_reg = 0.001
 batch_norm = False
 dropout = None
 
