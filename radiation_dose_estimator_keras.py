@@ -51,6 +51,10 @@ dataframe = pd.read_csv(r'C:\Users\visa\Documents\TYKS\Machine learning\Radiatio
 
 duplicates = any(dataframe.duplicated())
 
+#%% calculate correlation and standard deviation matrices
+
+std_mat, corr_mat, most_corr = analyse_correlation(dataframe, 10, 'Korjattu_DAP_GYcm2')
+
 #%% handle nan values
 
 # calculate nan percent for each label
@@ -137,25 +141,25 @@ dataframe.isnull().values.any()
 
 #%% create synthetic features
 
-dataframe['BSA'] = 0.007184 * dataframe['paino'].pow(0.425) * dataframe['pituus'].pow(0.725)
+#dataframe['BSA'] = 0.007184 * dataframe['paino'].pow(0.425) * dataframe['pituus'].pow(0.725)
 
-#%% calculate correlation and standard deviation matrices
-
-std_mat, corr_mat, most_corr = analyse_correlation(dataframe, 10, 'Korjattu_DAP_GYcm2')
-
-#%% check individual feature correlation
+#%% analyse individual feature correlations
 
 analyse_feature_correlation(dataframe, 'paino', 'Korjattu_DAP_GYcm2', False)
+analyse_feature_correlation(dataframe, 'AHA_cto', 'Korjattu_DAP_GYcm2', True)
 analyse_feature_correlation(dataframe, 'Patient_sex', 'Korjattu_DAP_GYcm2', True)
+analyse_feature_correlation(dataframe, 'FN2BA', 'Korjattu_DAP_GYcm2', True)
+analyse_feature_correlation(dataframe, 'I20.81_I21.01_I21.11_or_I21.41', 'Korjattu_DAP_GYcm2', True)
+analyse_feature_correlation(dataframe, 'add_stent_2_tai_yli', 'Korjattu_DAP_GYcm2', True)
+analyse_feature_correlation(dataframe, 'n_tmp_3', 'Korjattu_DAP_GYcm2', True)
+analyse_feature_correlation(dataframe, 'sten_post_100', 'Korjattu_DAP_GYcm2', True)
+analyse_feature_correlation(dataframe, 'suonia_2_tai_yli', 'Korjattu_DAP_GYcm2', True)
 
 #%% define feature and target labels
 
-feature_labels = ['paino', 'Patient_sex', 'AHA_a', 'AHA_b1',
-                  'AHA_b2', 'AHA_c', 'AHA_cto']
-
-#feature_labels = ['AHA_cto', 'sten_pre_100', 'suonia_2_tai_yli', 'Patient_sex',
-#                  'FN2BA', 'I20.81_I21.01_I21.11_or_I21.41', 'add_stent_2_tai_yli',
-#                  'sten_post_100', 'AHA_c']
+feature_labels = ['paino', 'AHA_cto', 'Patient_sex', 'FN2BA',
+                  'I20.81_I21.01_I21.11_or_I21.41', 'add_stent_2_tai_yli',
+                  'n_tmp_3', 'sten_post_100', 'suonia_2_tai_yli',]
 
 #feature_labels = ['paino', 'pituus', 'Patient_sex', 'Age', 
 #                  'I20.81_I21.01_I21.11_or_I21.41', 'I35.0', 'FN1AC', 'FN2BA',

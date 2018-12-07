@@ -26,7 +26,6 @@ Created on Thu Nov 29 13:56:01 2018
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-import numpy as np
 
 #%% define function
 
@@ -43,11 +42,11 @@ def analyse_correlation(dataframe, n, target_label):
     
     # correlation matrix of n features
     
-    cm = np.corrcoef(dataframe[cols].values.T)
+    corr_mat_n = dataframe[cols].corr()
     
     # display correlation matrix
     sns.set(font_scale = 1.25)
-    sns.heatmap(cm, cbar = True, annot = True, square = True, fmt = '.2f', 
+    sns.heatmap(corr_mat_n, cbar = True, annot = True, square = True, fmt = '.2f', 
                 annot_kws = {'size': 10}, yticklabels = cols.values, 
                 xticklabels = cols.values)
     plt.show()
