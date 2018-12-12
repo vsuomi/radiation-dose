@@ -63,7 +63,7 @@ nan_percent = pd.DataFrame(df.isnull().mean() * 100, columns = ['% of NaN'])
 # drop nan values
 
 #df = df.dropna()
-#df = df.dropna(subset = ['paino'])
+df = df.dropna(subset = ['paino'])
 #df = df.dropna(subset = ['AHA_cto'])
 #df = df.dropna(subset = ['Patient_sex'])
 #df = df.dropna(subset = ['FN2BA'])
@@ -90,7 +90,7 @@ n_testing = testing_set.shape[0]
 
 #%% calculate correlation and standard deviation matrices
 
-std_mat, corr_mat, most_corr = analyse_correlation(training_set, 11, 'Korjattu_DAP_GYcm2')
+std_mat, corr_mat, most_corr = analyse_correlation(training_set, 13, 'Korjattu_DAP_GYcm2')
 
 #%% analyse individual feature correlations
 
@@ -218,9 +218,16 @@ testing_set = df[-n_testing:]
 
 #%% define feature and target labels
 
-feature_labels = ['paino', 'AHA_cto', 'Patient_sex', 'FN2BA',
-                  'I20.81_I21.01_I21.11_or_I21.41', 'add_stent_2_tai_yli',
-                  'n_tmp_3', 'sten_post_100', 'suonia_2_tai_yli', 'pituus']
+feature_labels = ['paino', 'FN2BA', 'Patient_sex',
+                  'add_stent_2_tai_yli', 'Aiempi_ohitusleikkaus',
+                  'sten_post_85', 'sten_post_100', 'suonia_2_tai_yli',
+                  'I20.81_I21.01_I21.11_or_I21.41', 'I35.0', 
+                  'ind_nstemi', 'ind_pci_in_stemi', 'ind_stable_ap',
+                  'AHA_a', 'AHA_b1', 'AHA_b2', 'AHA_c', 'AHA_cto']
+
+#feature_labels = ['BSA', 'AHA_cto', 'FN2BA',
+#                  'add_stent_2_tai_yli',
+#                  'sten_post_100', 'suonia_2_tai_yli']
 
 #feature_labels = ['paino', 'pituus', 'Patient_sex', 'Age', 
 #                  'I20.81_I21.01_I21.11_or_I21.41', 'I35.0', 'FN1AC', 'FN2BA',
@@ -267,7 +274,7 @@ testing_features = (testing_features - t_mean) / t_std
 #validation_features = np.log1p(validation_features)
 #testing_features = np.log1p(testing_features)
 
-# box cox (for skewed data)
+# boxcox (for skewed data)
 
 #lmbda = 0.15
 #
@@ -275,18 +282,28 @@ testing_features = (testing_features - t_mean) / t_std
 #validation_features = sp.special.boxcox1p(validation_features, lmbda)
 #testing_features = sp.special.boxcox1p(testing_features, lmbda)
 
-#%% log transform targets (for skewed data)
+#%% scale targets (for skewed data)
+
+# log
 
 training_targets = np.log1p(training_targets)
 validation_targets = np.log1p(validation_targets)
 testing_targets = np.log1p(testing_targets)
+
+# boxcox
+
+#lmbda = 0.15
+#
+#training_targets = sp.special.boxcox1p(training_targets, lmbda)
+#validation_targets = sp.special.boxcox1p(validation_targets, lmbda)
+#testing_targets = sp.special.boxcox1p(testing_targets, lmbda)
 
 #%% build and train neural network model
 
 # define parameters
 
 learning_rate = 0.001
-n_epochs = 150
+n_epochs = 200
 n_neurons = 64
 n_layers = 2
 batch_size = 5
@@ -360,13 +377,21 @@ validation_predictions = model.predict(validation_features)
 validation_predictions = pd.DataFrame(validation_predictions, columns = target_label,
                                       index = validation_features.index, dtype = float)
 
-# convert targets to linear units (for skewed data)
+# convert logarithmic targets to linear units (for skewed data)
 
-training_targets_lin = np.exp(training_targets) - 1
-validation_targets_lin = np.exp(validation_targets) - 1
+training_targets_lin = np.expm1(training_targets)
+validation_targets_lin = np.expm1(validation_targets)
 
-training_predictions_lin = np.exp(training_predictions) - 1
-validation_predictions_lin = np.exp(validation_predictions) - 1
+training_predictions_lin = np.expm1(training_predictions)
+validation_predictions_lin = np.expm1(validation_predictions)
+
+# convert boxcox targets to linear units (for skewed data)
+
+#training_targets_lin = sp.special.inv_boxcox1p(training_targets, lmbda)
+#validation_targets_lin = sp.special.inv_boxcox1p(validation_targets, lmbda)
+#
+#training_predictions_lin = sp.special.inv_boxcox1p(training_predictions, lmbda)
+#validation_predictions_lin = sp.special.inv_boxcox1p(validation_predictions, lmbda)
 
 # plot training performance
 
@@ -427,5 +452,3 @@ variables_to_save = {'learning_rate': learning_rate,
 save_load_variables(model_dir, variables_to_save, 'variables', 'save')
 
 model.save(model_dir + '\\' + 'keras_model.h5')
-
-
