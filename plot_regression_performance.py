@@ -57,8 +57,8 @@ def plot_regression_performance(history, training_targets, training_predictions,
     plt.title('Prediction error')
     plt.xlabel('Prediction error')
     plt.ylabel('Count')
-    training_error = training_predictions.as_matrix() - training_targets.as_matrix()
-    validation_error = validation_predictions.as_matrix() - validation_targets.as_matrix()
+    training_error = training_predictions.values - training_targets.values
+    validation_error = validation_predictions.values - validation_targets.values
     plt.hist(training_error, bins = 50, label = 'Training')
     plt.hist(validation_error, bins = 50, label = 'Validation')
     plt.grid()
