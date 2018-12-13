@@ -28,6 +28,7 @@ import numpy as np
 import sklearn as sk
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
+from sklearn.utils.class_weight import compute_sample_weight
 import scipy as sp
 import time
 import os
@@ -81,6 +82,7 @@ df = df.dropna(subset = ['paino'])
 split_ratio = 0.2
 training_set, holdout_set = train_test_split(df, test_size = split_ratio)
 validation_set, testing_set = train_test_split(holdout_set, test_size = 0.5)
+del holdout_set
 
 # obtain sizes
 
@@ -166,6 +168,7 @@ df = training_set.append([validation_set, testing_set])
 
 for key, val in impute_values.items():
     df[key] = df[key].fillna(val)
+del key, val
 
 #%% fill in mutually exclusive categorical values
 
@@ -182,6 +185,8 @@ impute_values['sten_pre'] = sten_pre_training.mode()[0]
 AHA_training = training_set[['AHA_a', 'AHA_b1', 'AHA_b2', 
                              'AHA_c', 'AHA_cto']].idxmax(axis = 1)
 impute_values['AHA'] = AHA_training.mode()[0]
+
+del sten_post_training, sten_pre_training, AHA_training
 
 # impute data
 
@@ -206,6 +211,8 @@ AHA = pd.get_dummies(AHA).astype(int)
 AHA = AHA[['AHA_a', 'AHA_b1', 'AHA_b2', 'AHA_c', 'AHA_cto']]
 df[['AHA_a', 'AHA_b1', 'AHA_b2', 'AHA_c', 'AHA_cto']] = AHA
 
+del sten_post, sten_pre, AHA
+
 #%% check for nan values
 
 df.isnull().values.any()
@@ -219,8 +226,9 @@ testing_set = df[-n_testing:]
 #%% define feature and target labels
 
 feature_labels = ['paino', 'FN2BA', 'Patient_sex',
-                  'add_stent_2_tai_yli', 'Aiempi_ohitusleikkaus',
-                  'sten_post_85', 'sten_post_100', 'suonia_2_tai_yli',
+                  'Aiempi_ohitusleikkaus', 'suonia_2_tai_yli',
+                  'add_stent_2_tai_yli',
+                  'sten_post_85', 'sten_post_100',
                   'I20.81_I21.01_I21.11_or_I21.41', 'I35.0', 
                   'ind_nstemi', 'ind_pci_in_stemi', 'ind_stable_ap',
                   'AHA_a', 'AHA_b1', 'AHA_b2', 'AHA_c', 'AHA_cto']
@@ -257,53 +265,64 @@ training_targets = training_set[target_label]
 validation_targets = validation_set[target_label]
 testing_targets = testing_set[target_label]
 
+#%% calculate sample weights
+
+hist, bin_edges = np.histogram(training_targets, bins = 10)
+classes = training_targets.apply(lambda x: pd.cut(x, bin_edges, labels = False, 
+                                                  include_lowest = True)).values
+sample_weights = compute_sample_weight('balanced', classes)
+
 #%% scale features
 
-# z-score
+feature_transform = 'z-score'
 
-t_mean = training_features.mean()
-t_std = training_features.std()
+if feature_transform == 'z-score':
+    
+    t_mean = training_features.mean()
+    t_std = training_features.std()
+    
+    training_features = (training_features - t_mean) / t_std
+    validation_features = (validation_features - t_mean) / t_std
+    testing_features = (testing_features - t_mean) / t_std
 
-training_features = (training_features - t_mean) / t_std
-validation_features = (validation_features - t_mean) / t_std
-testing_features = (testing_features - t_mean) / t_std
+if feature_transform == 'log':
 
-# log (for skewed data)
+    training_features = np.log1p(training_features)
+    validation_features = np.log1p(validation_features)
+    testing_features = np.log1p(testing_features)
 
-#training_features = np.log1p(training_features)
-#validation_features = np.log1p(validation_features)
-#testing_features = np.log1p(testing_features)
+if feature_transform == 'box-cox':
 
-# boxcox (for skewed data)
-
-#lmbda = 0.15
-#
-#training_features = sp.special.boxcox1p(training_features, lmbda)
-#validation_features = sp.special.boxcox1p(validation_features, lmbda)
-#testing_features = sp.special.boxcox1p(testing_features, lmbda)
+    lmbda = 0.15
+    
+    training_features = sp.special.boxcox1p(training_features, lmbda)
+    validation_features = sp.special.boxcox1p(validation_features, lmbda)
+    testing_features = sp.special.boxcox1p(testing_features, lmbda)
 
 #%% scale targets (for skewed data)
 
-# log
+target_transform = 'log'
 
-training_targets = np.log1p(training_targets)
-validation_targets = np.log1p(validation_targets)
-testing_targets = np.log1p(testing_targets)
+if target_transform == 'log':
+    
+    training_targets = np.log1p(training_targets)
+    validation_targets = np.log1p(validation_targets)
+    testing_targets = np.log1p(testing_targets)
 
-# boxcox
-
-#lmbda = 0.15
-#
-#training_targets = sp.special.boxcox1p(training_targets, lmbda)
-#validation_targets = sp.special.boxcox1p(validation_targets, lmbda)
-#testing_targets = sp.special.boxcox1p(testing_targets, lmbda)
+if target_transform == 'box-cox':
+    
+    lmbda = 0.15    
+    
+    training_targets = sp.special.boxcox1p(training_targets, lmbda)
+    validation_targets = sp.special.boxcox1p(validation_targets, lmbda)
+    testing_targets = sp.special.boxcox1p(testing_targets, lmbda)
 
 #%% build and train neural network model
 
 # define parameters
 
 learning_rate = 0.001
-n_epochs = 200
+n_epochs = 150
 n_neurons = 64
 n_layers = 2
 batch_size = 5
@@ -311,6 +330,9 @@ l1_reg = 0.0
 l2_reg = 0.01
 batch_norm = False
 dropout = None
+
+if 'sample_weights' not in locals():
+    sample_weights = None
 
 # build model
 
@@ -357,7 +379,7 @@ class PrintDot(k.callbacks.Callback):
 timestr = time.strftime('%Y%m%d-%H%M%S')
 
 history = model.fit(training_features, training_targets, verbose = 0, callbacks = [PrintDot()],
-                    batch_size = batch_size, epochs = n_epochs,
+                    batch_size = batch_size, epochs = n_epochs, sample_weight = sample_weights,
                     validation_data = (validation_features, validation_targets))
 
 #%% evaluate model performance
@@ -377,29 +399,36 @@ validation_predictions = model.predict(validation_features)
 validation_predictions = pd.DataFrame(validation_predictions, columns = target_label,
                                       index = validation_features.index, dtype = float)
 
-# convert logarithmic targets to linear units (for skewed data)
+# convert log targets to linear units (for skewed data)
 
-training_targets_lin = np.expm1(training_targets)
-validation_targets_lin = np.expm1(validation_targets)
+if target_transform == 'log':
 
-training_predictions_lin = np.expm1(training_predictions)
-validation_predictions_lin = np.expm1(validation_predictions)
+    training_targets_lin = np.expm1(training_targets)
+    validation_targets_lin = np.expm1(validation_targets)
+    
+    training_predictions_lin = np.expm1(training_predictions)
+    validation_predictions_lin = np.expm1(validation_predictions)
 
-# convert boxcox targets to linear units (for skewed data)
+# convert box-cox targets to linear units (for skewed data)
+    
+if target_transform == 'box-cox':
 
-#training_targets_lin = sp.special.inv_boxcox1p(training_targets, lmbda)
-#validation_targets_lin = sp.special.inv_boxcox1p(validation_targets, lmbda)
-#
-#training_predictions_lin = sp.special.inv_boxcox1p(training_predictions, lmbda)
-#validation_predictions_lin = sp.special.inv_boxcox1p(validation_predictions, lmbda)
+    training_targets_lin = sp.special.inv_boxcox1p(training_targets, lmbda)
+    validation_targets_lin = sp.special.inv_boxcox1p(validation_targets, lmbda)
+    
+    training_predictions_lin = sp.special.inv_boxcox1p(training_predictions, lmbda)
+    validation_predictions_lin = sp.special.inv_boxcox1p(validation_predictions, lmbda)
 
 # plot training performance
+    
+if (target_transform == 'log') or (target_transform == 'box-cox'):
 
-#f1 = plot_regression_performance(history, training_targets, training_predictions, 
-#                                 validation_targets, validation_predictions)
+    f1 = plot_regression_performance(history, training_targets_lin, training_predictions_lin, 
+                                     validation_targets_lin, validation_predictions_lin)
+else:
 
-f1 = plot_regression_performance(history, training_targets_lin, training_predictions_lin, 
-                                 validation_targets_lin, validation_predictions_lin)
+    f1 = plot_regression_performance(history, training_targets, training_predictions, 
+                                     validation_targets, validation_predictions)
 
 #%% save model
 
@@ -428,6 +457,9 @@ variables_to_save = {'learning_rate': learning_rate,
                      'corr_mat': corr_mat,
                      'std_mat': std_mat,
                      'split_ratio': split_ratio,
+                     'sample_weights': sample_weights,
+                     'feature_transform': feature_transform,
+                     'target_transform': target_transform,
                      'timestr': timestr,
                      'history': history,
                      'model_dir': model_dir,
