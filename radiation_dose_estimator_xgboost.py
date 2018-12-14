@@ -65,8 +65,9 @@ nan_percent = pd.DataFrame(df.isnull().mean() * 100, columns = ['% of NaN'])
 # drop nan values
 
 #df = df.dropna()
-df = df.dropna(subset = ['paino'])
+#df = df.dropna(subset = ['paino'])
 #df = df.dropna(subset = ['AHA_cto'])
+#df = df.dropna(subset = ['AHA_b1'])
 #df = df.dropna(subset = ['Patient_sex'])
 #df = df.dropna(subset = ['FN2BA'])
 #df = df.dropna(subset = ['I20.81_I21.01_I21.11_or_I21.41'])
@@ -226,27 +227,10 @@ testing_set = df[-n_testing:]
 
 #%% define feature and target labels
 
-#feature_labels = ['paino', 'FN2BA',
-#                  'Aiempi_ohitusleikkaus', 'suonia_2_tai_yli',
-#                  'add_stent_2_tai_yli',
-#                  'sten_post_85', 'sten_post_100',
-#                  'I20.81_I21.01_I21.11_or_I21.41', 'I35.0',
-#                  'ind_nstemi', 'ind_pci_in_stemi', 'ind_stable_ap',
-#                  'AHA_a', 'AHA_b1', 'AHA_b2', 'AHA_c', 'AHA_cto']
+#feature_labels = ['AHA_b1', 'paino', 'sten_pre_100', 'Age', 'AHA_cto',
+#                  'Patient_sex', 'FN1AC', 'FN2BA', 'I20.81_I21.01_I21.11_or_I21.41']
 
-#feature_labels = ['paino', 'FN2BA', 'Patient_sex',
-#                  'Aiempi_ohitusleikkaus', 'suonia_2_tai_yli',
-#                  'add_stent_2_tai_yli',
-#                  'sten_post_85', 'sten_post_100',
-#                  'I20.81_I21.01_I21.11_or_I21.41', 'I35.0', 
-#                  'ind_nstemi', 'ind_pci_in_stemi', 'ind_stable_ap',
-#                  'AHA_a', 'AHA_b1', 'AHA_b2', 'AHA_c', 'AHA_cto']
-
-#feature_labels = ['BSA', 'AHA_cto', 'FN2BA',
-#                  'add_stent_2_tai_yli',
-#                  'sten_post_100', 'suonia_2_tai_yli']
-
-feature_labels = ['paino', 'pituus', 'Patient_sex', 'Age', 
+feature_labels = ['BSA', 'paino', 'pituus', 'Patient_sex', 'Age', 
                   'I20.81_I21.01_I21.11_or_I21.41', 'I35.0', 'FN1AC', 'FN2BA',
                   'FN2AA', 'TFC00', 'n_tmp_1', 'n_tmp_2', 'n_tmp_3', 
                   'ind_pci_in_stemi', 'ind_flap_failure', 'ind_nstemi', 
@@ -337,7 +321,9 @@ param = {
         'subsample': 0.8,
         'colsample_bytree': 0.8,
         'silent': 1,
-        'seed': 123
+        'seed': 123,
+        'alpha': 0.0,
+        'labmda': 0.01,
         }
 
 trn = xgb.DMatrix(training_features, label = training_targets, weight = sample_weights)
@@ -353,7 +339,7 @@ evals_result = {}
 timestr = time.strftime('%Y%m%d-%H%M%S')
 
 model = xgb.train(param, trn, min_index, [(trn, 'training'), (vld,'validation')],
-                  evals_result = evals_result)
+                  evals_result = evals_result, verbose_eval = 10)
 
 #%% evaluate model performance
 
