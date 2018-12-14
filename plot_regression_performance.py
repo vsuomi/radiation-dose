@@ -22,7 +22,7 @@ import numpy as np
 
 #%% define function
 
-def plot_regression_performance(history, training_targets, training_predictions, 
+def plot_regression_performance(model, losses, training_targets, training_predictions, 
                                 validation_targets, validation_predictions):
     
     # training error
@@ -31,16 +31,23 @@ def plot_regression_performance(history, training_targets, training_predictions,
     plt.subplot(1, 3, 1)
     plt.title('Training and validation error')
     plt.xlabel('Epoch')
-    plt.ylabel('Mean squared error')
-    plt.plot(history.epoch, np.array(history.history['loss']),
-             label = 'Training')
-    plt.plot(history.epoch, np.array(history.history['val_loss']),
-             label = 'Validation')
+    plt.ylabel('Error')
+    
+    if model == 'keras':
+        plt.plot(losses.epoch, np.array(losses.history['loss']),
+                 label = 'Training')
+        plt.plot(losses.epoch, np.array(losses.history['val_loss']),
+                 label = 'Validation')
+    if model == 'xgboost':
+        plt.plot(np.array(losses['training']['rmse']),
+                 label = 'Training')
+        plt.plot(np.array(losses['validation']['rmse']),
+                 label = 'Validation')
     plt.grid()
     plt.legend()
     
     # prediction accuracy
-    
+       
     plt.subplot(1, 3, 2)
     plt.title('Prediction accuracy')
     plt.xlabel('Targets')
