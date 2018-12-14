@@ -38,6 +38,7 @@ from plot_regression_performance import plot_regression_performance
 from analyse_statistics import analyse_statistics
 from analyse_correlation import analyse_correlation
 from analyse_feature_correlation import analyse_feature_correlation
+from plot_feature_importance import plot_feature_importance
 
 #%% define logging and data display format
 
@@ -339,7 +340,7 @@ param = {
         'seed': 123
         }
 
-trn = xgb.DMatrix(training_features, label = training_targets)
+trn = xgb.DMatrix(training_features, label = training_targets, weight = sample_weights)
 vld = xgb.DMatrix(validation_features, label = validation_targets)
 
 res = xgb.cv(param, trn, nfold = 4, num_boost_round = 2000, early_stopping_rounds = 50,
@@ -348,6 +349,8 @@ res = xgb.cv(param, trn, nfold = 4, num_boost_round = 2000, early_stopping_round
 min_index = np.argmin(res['test-rmse-mean'])
 
 evals_result = {}
+
+timestr = time.strftime('%Y%m%d-%H%M%S')
 
 model = xgb.train(param, trn, min_index, [(trn, 'training'), (vld,'validation')],
                   evals_result = evals_result)
@@ -366,8 +369,8 @@ validation_predictions = pd.DataFrame(validation_predictions, columns = target_l
 
 # calculate loss metrics
 
-print('Training RMSE:', np.sqrt(mean_squared_error(training_targets, training_predictions)))
-print('Validation RMSE:', np.sqrt(mean_squared_error(validation_targets, validation_predictions)))
+training_error = np.sqrt(mean_squared_error(training_targets, training_predictions))
+validation_error = np.sqrt(mean_squared_error(validation_targets, validation_predictions))
 
 # convert log targets to linear units (for skewed data)
 
@@ -399,6 +402,10 @@ else:
 
     f1 = plot_regression_performance('xgboost', evals_result, training_targets, training_predictions, 
                                      validation_targets, validation_predictions)
+    
+# plot feature importance
+    
+f2 = plot_feature_importance(model, training_features)
 
 #%% save model
 
@@ -410,6 +417,8 @@ if not os.path.exists(model_dir):
     os.makedirs(model_dir)
     
 f1.savefig(model_dir + '\\' + 'evaluation_metrics.pdf', dpi = 600, format = 'pdf',
+                    bbox_inches = 'tight', pad_inches = 0)
+f2.savefig(model_dir + '\\' + 'feature_importance.pdf', dpi = 600, format = 'pdf',
                     bbox_inches = 'tight', pad_inches = 0)
 
 variables_to_save = {'param': param,
@@ -428,7 +437,6 @@ variables_to_save = {'param': param,
                      'feature_transform': feature_transform,
                      'target_transform': target_transform,
                      'timestr': timestr,
-                     'history': history,
                      'model_dir': model_dir,
                      'df': df,
                      'df_orig': df_orig,
@@ -449,3 +457,5 @@ variables_to_save = {'param': param,
                      'testing_targets': testing_targets}
     
 save_load_variables(model_dir, variables_to_save, 'variables', 'save')
+
+model.save_model(model_dir + '\\' + 'xgboost_model.h5')
