@@ -323,7 +323,7 @@ param = {
         'silent': 1,
         'seed': 123,
         'alpha': 0.0,
-        'labmda': 0.01,
+        'lambda': 0.01,
         }
 
 trn = xgb.DMatrix(training_features, label = training_targets, weight = sample_weights)
