@@ -34,9 +34,9 @@ from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.metrics import mean_squared_error
 
 from sklearn.feature_selection import f_regression, mutual_info_regression
-from skfeature.function.information_theoretical_based import CMIM
-from skfeature.function.structure import group_fs, tree_fs
-from skfeature.function.streaming import alpha_investing
+#from skfeature.function.information_theoretical_based import CMIM
+#from skfeature.function.structure import group_fs, tree_fs
+#from skfeature.function.streaming import alpha_investing
 
 from save_load_variables import save_load_variables
 
@@ -163,23 +163,14 @@ n_features = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20]
 
 # define scorer methods
 
-methods =   ['CMIM',
-             'FREG',
+methods =   ['FREG',
              'MIR'
              ]
 
 # define scorer functions
 
-scorers = [CMIM.cmim,
-           f_regression,
+scorers = [f_regression,
            mutual_info_regression
-           ]
-
-# define scorer rankers (for scikit-feature only)
-
-rankers = [None,
-           None,
-           None
            ]
 
 # define parameters for parameter search
@@ -355,40 +346,25 @@ for iteration in range(0, n_iterations):
     
     k_features = pd.DataFrame(index = range(0, k), columns = methods)
     
-    for scorer, ranker, method in zip(scorers, rankers, methods):
-        
-        if method in ('CMIM'):
+    for scorer, method in zip(scorers, methods):
             
-            indices, _, _ = scorer(training_features.values, training_targets.values[:, 0], n_selected_features = k)
-            k_features[method] = list(training_features.columns.values[indices[0:k]])
+        if method in ('FREG'):
             
-            del indices
-            
-        elif method in ('FREG'):
-            
-            scores, _ = selector(training_features.values, training_targets.values[:, 0])
-            indices = np.argsort(F)[::-1]
+            scores, _ = scorer(training_features.values, training_targets.values[:, 0])
+            indices = np.argsort(scores)[::-1]
             k_features[method] = list(training_features.columns.values[indices[0:k]])
             
             del scores, indices
             
         elif method in ('MIR'):
             
-            scores = selector(training_features.values, training_targets.values[:, 0])
-            indices = np.argsort(F)[::-1]
-            k_features[method] = list(training_features.columns.values[indices[0:k]])
-            
-            del scores, indices
-        
-        else:
-            
             scores = scorer(training_features.values, training_targets.values[:, 0])
-            indices = ranker(scores)
+            indices = np.argsort(scores)[::-1]
             k_features[method] = list(training_features.columns.values[indices[0:k]])
             
             del scores, indices
             
-    del scorer, ranker, method
+    del scorer, method
     
     # calculate feature scores
     
