@@ -177,8 +177,8 @@ scorers = [f_regression,
 
 grid_param =    {
                 'kernel': ['rbf'], 
-                'C': list(np.logspace(-1, 4, 6)),
-                'gamma': list(np.logspace(-2, 4, 7))
+                'C': list(np.logspace(1, 6, 6)),
+                'gamma': list(np.logspace(-4, 2, 7))
                 }
 
 # define data imputation values
@@ -396,7 +396,7 @@ for iteration in range(0, n_iterations):
             
             res = pd.DataFrame(reg_fit.best_params_, index = [0])
             res['method'] = method
-            res['validation_score'] = reg_fit.best_score_
+            res['validation_score'] = abs(reg_fit.best_score_)
             res['test_score'] = test_score
             res['n_features'] = n
             res['iteration'] = iteration
@@ -559,7 +559,7 @@ for random_state in random_states:
         
         res = pd.DataFrame(reg_fit.best_params_, index = [0])
         res['method'] = 'TOPN'
-        res['validation_score'] = reg_fit.best_score_
+        res['validation_score'] = abs(reg_fit.best_score_)
         res['test_score'] = test_score
         res['n_features'] = n
         res['iteration'] = iteration
@@ -636,14 +636,14 @@ cmap = sns.diverging_palette(220, 10, as_cmap = True)
 
 # plot validation and test scores
 
-f1 = plt.figure()
-ax = sns.heatmap(heatmap_vscore_mean, cmap = 'Blues', linewidths = 0.5, annot = True, fmt = ".2f")
+f1 = plt.figure(figsize = (8, 4))
+ax = sns.heatmap(heatmap_vscore_mean, cmap = 'Blues', linewidths = 0.5, annot = True, fmt = ".0f")
 #ax.set_aspect(1)
 plt.ylabel('Feature selection method')
 plt.xlabel('Number of features')
 
-f2 = plt.figure()
-ax = sns.heatmap(heatmap_tscore_mean, cmap = 'Blues', linewidths = 0.5, annot = True, fmt = ".2f")
+f2 = plt.figure(figsize = (8, 4))
+ax = sns.heatmap(heatmap_tscore_mean, cmap = 'Blues', linewidths = 0.5, annot = True, fmt = ".0f")
 #ax.set_aspect(1)
 plt.ylabel('Feature selection method')
 plt.xlabel('Number of features')
@@ -671,13 +671,13 @@ ax.set_xticklabels(ax.get_xticklabels(), rotation = 90)
 plt.ylabel('Ranking')
 plt.xlabel('Feature')
 
-f5 = plt.figure(figsize = (22, 4))
-ax = sns.heatmap(heatmap_rankings_mean, cmap = 'Blues', linewidths = 0.5, annot = True, fmt = '.1f')
+f5 = plt.figure(figsize = (24, 4))
+ax = sns.heatmap(heatmap_rankings_mean, cmap = 'Blues', linewidths = 0.5, annot = True, fmt = '.0f')
 #ax.set_aspect(1)
 plt.ylabel('Feature selection method')
 plt.xlabel('Feature')
 
-f6 = plt.figure(figsize = (18, 4))
+f6 = plt.figure(figsize = (24, 4))
 ax = sns.heatmap(heatmap_rankings_median, cmap = 'Blues', linewidths = 0.5, annot = True, fmt = '.0f')
 #ax.set_aspect(1)
 plt.ylabel('Feature selection method')
@@ -685,12 +685,12 @@ plt.xlabel('Feature')
 
 # plot parameter distributions
 
-f7 = plt.figure()
+f7 = plt.figure(figsize = (6, 4))
 ax = reg_results.C.value_counts().plot(kind = 'bar')
 plt.ylabel('Count')
 plt.xlabel('C')
 
-f8 = plt.figure()
+f8 = plt.figure(figsize = (6, 4))
 ax = reg_results.gamma.value_counts().plot(kind = 'bar')
 plt.ylabel('Count')
 plt.xlabel('Gamma')
