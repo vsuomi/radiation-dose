@@ -164,21 +164,25 @@ n_features = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20]
 # define scorer methods
 
 methods =   ['FREG',
-             'MIR'
+             'MIR',
+             'PEAR',
+             'SPEA'
              ]
 
 # define scorer functions
 
 scorers = [f_regression,
-           mutual_info_regression
+           mutual_info_regression,
+           'pearson',
+           'spearman'
            ]
 
 # define parameters for parameter search
 
 grid_param =    {
                 'kernel': ['rbf'], 
-                'C': list(np.logspace(1, 6, 6)),
-                'gamma': list(np.logspace(-4, 2, 7))
+                'C': list(np.logspace(-1, 4, 6)),
+                'gamma': list(np.logspace(-2, 4, 7))
                 }
 
 # define data imputation values
@@ -363,6 +367,14 @@ for iteration in range(0, n_iterations):
             k_features[method] = list(training_features.columns.values[indices[0:k]])
             
             del scores, indices
+            
+        elif method in ('PEAR', 'SPEA'):
+            
+            fcorr = pd.concat([training_features, training_targets], axis = 1, sort = False).corr(method = scorer)
+            scores = abs(fcorr[target_label].drop(target_label, axis = 0))
+            k_features[method] = list(scores.sort_values(by = target_label, ascending = False).index)
+            
+            del fcorr, scores
             
     del scorer, method
     
@@ -621,7 +633,7 @@ del top_vscore_mean, top_tscore_mean, top_rankings_mean, top_rankings_median
 
 # correlation matrix
 
-feature_corr = df[feature_labels].corr()
+feature_corr = df[feature_labels].corr(method = 'pearson')
 
 # a mask for the upper triangle
 
