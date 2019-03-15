@@ -60,13 +60,13 @@ duplicates = any(df.duplicated())
 df['BSA'] = 0.007184 * df['Weight'].pow(0.425) * df['Height'].pow(0.725)
 df['BMI'] = df['Weight'] / (df['Height'] / 1e2).pow(2)
 
-#%% calculate nan percent for each label
+#%% calculate data quality
 
-nan_percent = pd.DataFrame(df.isnull().mean() * 100, columns = ['NaN ratio'])
-
-#%% calculate standard deviation
-
-std = pd.DataFrame(df.std(), columns = ['STD'])
+df_quality = pd.DataFrame(df.isnull().mean() * 100, columns = ['NaN ratio'])
+df_quality['Mean'] = df.mean()
+df_quality['Median'] = df.median()
+df_quality['SD'] = df.std()
+df_quality['Sum'] = df.sum()
 
 #%% define feature and target labels
 
@@ -104,13 +104,13 @@ feature_labels = ['Weight',
                   'LCXc', 
                   'LD1', 
                   'LD2', 
-                  'Lita',
+#                  'Lita',
                   'LM', 
                   'LOM1', 
                   'LOM2', 
                   'LPD', 
                   'LPL', 
-                  'RAM (RV)', 
+#                  'RAM (RV)', 
                   'RCAa', 
                   'RCAb',
                   'RCAc', 
@@ -119,7 +119,7 @@ feature_labels = ['Weight',
                   'RPL', 
                   'VGRCA (AG)', 
                   'VGLCA1 (AG)', 
-                  'VGLCA2 (AG)', 
+#                  'VGLCA2 (AG)', 
                   'Restenosis', 
                   'Stent dimension', 
                   'Ball dimension',
@@ -214,13 +214,13 @@ impute_labels = ['Weight',
                  'LCXc', 
                  'LD1', 
                  'LD2', 
-                 'Lita',
+#                 'Lita',
                  'LM', 
                  'LOM1', 
                  'LOM2', 
                  'LPD', 
                  'LPL', 
-                 'RAM (RV)', 
+#                 'RAM (RV)', 
                  'RCAa', 
                  'RCAb',
                  'RCAc', 
@@ -229,7 +229,7 @@ impute_labels = ['Weight',
                  'RPL', 
                  'VGRCA (AG)', 
                  'VGLCA1 (AG)', 
-                 'VGLCA2 (AG)', 
+#                 'VGLCA2 (AG)', 
                  'Restenosis', 
                  'Stent dimension', 
                  'Ball dimension',
@@ -781,8 +781,7 @@ for filetype in ['pdf', 'png', 'eps']:
     f10.savefig(model_dir + '\\' + 'method_corr.' + filetype, dpi = 600, format = filetype,
                 bbox_inches = 'tight', pad_inches = 0)
 
-variables_to_save = {'nan_percent': nan_percent,
-                     'grid_param': grid_param,
+variables_to_save = {'grid_param': grid_param,
                      'impute_labels': impute_labels,
                      'max_iter': max_iter,
                      'k': k,
@@ -814,6 +813,7 @@ variables_to_save = {'nan_percent': nan_percent,
                      'scaling_type': scaling_type,
                      'model_dir': model_dir,
                      'df': df,
+                     'df_quality': df_quality,
                      'feature_labels': feature_labels,
                      'target_label': target_label}
     
