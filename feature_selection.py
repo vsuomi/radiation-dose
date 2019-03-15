@@ -37,6 +37,7 @@ from sklearn.feature_selection import f_regression, mutual_info_regression
 #from skfeature.function.information_theoretical_based import CMIM
 #from skfeature.function.structure import group_fs, tree_fs
 #from skfeature.function.streaming import alpha_investing
+from sklearn_relief import RReliefF
 
 from save_load_variables import save_load_variables
 
@@ -56,7 +57,8 @@ duplicates = any(df.duplicated())
 
 #%% create synthetic features
 
-df['BSA'] = 0.007184 * df['paino'].pow(0.425) * df['pituus'].pow(0.725)
+df['BSA'] = 0.007184 * df['Weight'].pow(0.425) * df['Height'].pow(0.725)
+df['BMI'] = df['Weight'] / (df['Height'] / 1e2).pow(2)
 
 #%% calculate nan percent for each label
 
@@ -68,80 +70,81 @@ std = pd.DataFrame(df.std(), columns = ['STD'])
 
 #%% define feature and target labels
 
-feature_labels = ['BSA',
-                  'paino', 
-                  'pituus', 
-                  'Patient_sex', 
+feature_labels = ['Weight', 
+                  'Height', 
+                  'Gender', 
                   'Age', 
-                  'I20.81_I21.01_I21.11_or_I21.41', 
+                  'I20.81, I21.01, I21.11 or I21.41', 
                   'I35.0', 
                   'FN1AC', 
                   'FN2BA',
                   'FN2AA', 
                   'TFC00', 
-                  'n_tmp_1', 
-                  'n_tmp_2', 
-                  'n_tmp_3', 
-                  'ind_pci_in_stemi', 
-                  'ind_flap_failure', 
-                  'ind_nstemi', 
-                  'ind_diag', 
-                  'ind_uap', 
-                  'ind_heart_failure', 
-                  'ind_stemi_other',
-                  'ind_stable_ap', 
-                  'ind_arrhythmia_settl', 
-                  'suonia_2_tai_yli', 
-                  'lm_unprotected', 
-                  'Aiempi_ohitusleikkaus', 
-                  'im', 
-                  'lada', 
-                  'ladb',
-                  'ladc', 
-                  'lcxa', 
-                  'lcxb', 
-                  'lcxc', 
-                  'ld1', 
-                  'ld2', 
-#                  'lita',
-                  'lm', 
-                  'lom1', 
-                  'lom2', 
-                  'lpd', 
-                  'lpl', 
-#                  'ram_rv', 
-                  'rcaa', 
-                  'rcab',
-                  'rcac', 
-                  'rita', 
-                  'rpd', 
-                  'rpl', 
-                  'vgrca_ag', 
-                  'vglca1_ag', 
-#                  'vglca2_ag', 
-                  'restenosis', 
-                  'stent_dimension', 
-                  'ball_dimension',
-                  'add_stent_1', 
-                  'add_stent_2_tai_yli', 
-                  'sten_post_0', 
-                  'sten_post_25', 
-                  'sten_post_60', 
-                  'sten_post_85', 
-                  'sten_post_100',
-                  'sten_pre_100', 
-                  'sten_pre_85', 
-                  'sten_pre_60', 
-                  'AHA_a', 
-                  'AHA_b1',
-                  'AHA_b2', 
-                  'AHA_c', 
-                  'AHA_cto', 
+                  'N of procedures 1', 
+                  'N of procedures 2', 
+                  'N of procedures 3', 
+                  'PCI in STEMI', 
+                  'Flap failure', 
+                  'NSTEMI', 
+                  'Diagnostic', 
+                  'UAP', 
+                  'Heart failure', 
+                  'STEMI other',
+                  'Stable AP', 
+                  'Arrhythmia settlement', 
+                  'Multi-vessel disease', 
+                  'LM unprotected', 
+                  'Previous CABG', 
+                  'IM', 
+                  'LADa', 
+                  'LADb',
+                  'LADc', 
+                  'LCXa', 
+                  'LCXb', 
+                  'LCXc', 
+                  'LD1', 
+                  'LD2', 
+                  'Lita',
+                  'LM', 
+                  'LOM1', 
+                  'LOM2', 
+                  'LPD', 
+                  'LPL', 
+                  'RAM (RV)', 
+                  'RCAa', 
+                  'RCAb',
+                  'RCAc', 
+                  'Rita', 
+                  'RPD', 
+                  'RPL', 
+                  'VGRCA (AG)', 
+                  'VGLCA1 (AG)', 
+                  'VGLCA2 (AG)', 
+                  'Restenosis', 
+                  'Stent dimension', 
+                  'Ball dimension',
+                  'Additional stenting 1', 
+                  'Additional stenting over 1', 
+                  'Post-stenosis 0%', 
+                  'Post-stenosis 25%', 
+                  'Post-stenosis 60%', 
+                  'Post-stenosis 85%', 
+                  'Post-stenosis 100%',
+                  'Pre-stenosis 100%', 
+                  'Pre-stenosis 85%', 
+                  'Pre-stenosis 60%', 
+                  'AHA score A', 
+                  'AHA score B1',
+                  'AHA score B2', 
+                  'AHA score C', 
+                  'CTO', 
                   'IVUS', 
-                  'OCT'
+                  'OCT',
+                  'BSA',
+                  'BMI'
                   ]
 
-target_label = ['Korjattu_DAP_GYcm2']
+target_label = ['DAP']
 
 #%% define parameters for iteration
 
@@ -159,14 +162,15 @@ scaling_type = 'log'
 
 # define number of features
 
-n_features = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20]
+n_features = [5, 10, 15, 20, 25, 30]
 
 # define scorer methods
 
 methods =   ['FREG',
              'MIR',
              'PEAR',
-             'SPEA'
+             'SPEA',
+             'RELF'
              ]
 
 # define scorer functions
@@ -174,7 +178,8 @@ methods =   ['FREG',
 scorers = [f_regression,
            mutual_info_regression,
            'pearson',
-           'spearman'
+           'spearman',
+           RReliefF
            ]
 
 # define parameters for parameter search
@@ -187,63 +192,64 @@ grid_param =    {
 
 # define data imputation values
 
-impute_labels = ['BSA',
-                 'paino', 
-                 'pituus',
-                 'ind_pci_in_stemi', 
-                 'ind_flap_failure', 
-                 'ind_nstemi', 
-                 'ind_diag', 
-                 'ind_uap', 
-                 'ind_heart_failure', 
-                 'ind_stemi_other',
-                 'ind_stable_ap', 
-                 'ind_arrhythmia_settl', 
-                 'suonia_2_tai_yli', 
-                 'lm_unprotected',
-                 'im', 
-                 'lada', 
-                 'ladb',
-                 'ladc', 
-                 'lcxa', 
-                 'lcxb', 
-                 'lcxc', 
-                 'ld1', 
-                 'ld2', 
-                 'lita',
-                 'lm', 
-                 'lom1', 
-                 'lom2', 
-                 'lpd', 
-                 'lpl', 
-                 'ram_rv', 
-                 'rcaa', 
-                 'rcab',
-                 'rcac', 
-                 'rita', 
-                 'rpd', 
-                 'rpl', 
-                 'vgrca_ag', 
-                 'vglca1_ag', 
-                 'vglca2_ag', 
-                 'restenosis', 
-                 'stent_dimension', 
-                 'ball_dimension',
-                 'add_stent_1', 
-                 'add_stent_2_tai_yli', 
-                 'sten_post_0', 
-                 'sten_post_25', 
-                 'sten_post_60', 
-                 'sten_post_85', 
-                 'sten_post_100',
-                 'sten_pre_100', 
-                 'sten_pre_85', 
-                 'sten_pre_60', 
-                 'AHA_a', 
-                 'AHA_b1',
-                 'AHA_b2', 
-                 'AHA_c', 
-                 'AHA_cto',
+impute_labels = ['Weight', 
+                 'Height', 
+                 'PCI in STEMI', 
+                 'Flap failure', 
+                 'NSTEMI', 
+                 'Diagnostic', 
+                 'UAP', 
+                 'Heart failure', 
+                 'STEMI other',
+                 'Stable AP', 
+                 'Arrhythmia settlement', 
+                 'Multi-vessel disease', 
+                 'LM unprotected', 
+                 'IM', 
+                 'LADa', 
+                 'LADb',
+                 'LADc', 
+                 'LCXa', 
+                 'LCXb', 
+                 'LCXc', 
+                 'LD1', 
+                 'LD2', 
+                 'Lita',
+                 'LM', 
+                 'LOM1', 
+                 'LOM2', 
+                 'LPD', 
+                 'LPL', 
+                 'RAM (RV)', 
+                 'RCAa', 
+                 'RCAb',
+                 'RCAc', 
+                 'Rita', 
+                 'RPD', 
+                 'RPL', 
+                 'VGRCA (AG)', 
+                 'VGLCA1 (AG)', 
+                 'VGLCA2 (AG)', 
+                 'Restenosis', 
+                 'Stent dimension', 
+                 'Ball dimension',
+                 'Additional stenting 1', 
+                 'Additional stenting over 1', 
+                 'Post-stenosis 0%', 
+                 'Post-stenosis 25%', 
+                 'Post-stenosis 60%', 
+                 'Post-stenosis 85%', 
+                 'Post-stenosis 100%',
+                 'Pre-stenosis 100%', 
+                 'Pre-stenosis 85%', 
+                 'Pre-stenosis 60%', 
+                 'AHA score A', 
+                 'AHA score B1',
+                 'AHA score B2', 
+                 'AHA score C', 
+                 'CTO', 
+                 'BSA',
+                 'BMI'
                  ]
 
 # define regression model
@@ -295,9 +301,16 @@ for iteration in range(0, n_iterations):
     
     for label in impute_labels:
         
-        if label in {'BSA', 'paino', 'pituus', 'Age', 'stent_dimension', 'ball_dimension'}:
+        if label in {'Weight', 'Height', 'Age', 'Stent dimension', 'Ball dimension', 'BSA', 'BMI'}:
             
             impute_values[label] = training_set[label].mean()
+            
+            training_set[label] = training_set[label].fillna(impute_values[label])
+            testing_set[label] = testing_set[label].fillna(impute_values[label])
+            
+        elif label in {'Additional stenting 1', 'Additional stenting over 1'}:
+            
+            impute_values[label] = 0
             
             training_set[label] = training_set[label].fillna(impute_values[label])
             testing_set[label] = testing_set[label].fillna(impute_values[label])
@@ -375,6 +388,16 @@ for iteration in range(0, n_iterations):
             k_features[method] = list(scores.sort_values(by = target_label, ascending = False).index)
             
             del fcorr, scores
+            
+        elif method in ('RELF'):
+            
+            relf = RReliefF(n_features = k)
+            weights = relf.fit(training_features.values, training_targets.values[:, 0])
+            indices = np.argsort(weights.w_)[::-1]
+            k_features[method] = list(training_features.columns.values[indices[0:k]])
+            
+            del relf, weights, indices
+            
             
     del scorer, method
     
@@ -505,9 +528,16 @@ for random_state in random_states:
     
     for label in impute_labels:
         
-        if label in {'BSA', 'paino', 'pituus', 'Age', 'stent_dimension', 'ball_dimension'}:
+        if label in {'Weight', 'Height', 'Age', 'Stent dimension', 'Ball dimension', 'BSA', 'BMI'}:
             
             impute_values[label] = training_set[label].mean()
+            
+            training_set[label] = training_set[label].fillna(impute_values[label])
+            testing_set[label] = testing_set[label].fillna(impute_values[label])
+            
+        elif label in {'Additional stenting 1', 'Additional stenting over 1'}:
+            
+            impute_values[label] = 0
             
             training_set[label] = training_set[label].fillna(impute_values[label])
             testing_set[label] = testing_set[label].fillna(impute_values[label])
@@ -633,12 +663,16 @@ del top_vscore_mean, top_tscore_mean, top_rankings_mean, top_rankings_median
 
 # correlation matrix
 
-feature_corr = df[feature_labels].corr(method = 'pearson')
+feature_corr = dataframe[feature_labels].corr(method = 'spearman')
+method_corr = heatmap_rankings_median.T.corr(method = 'kendall')
 
 # a mask for the upper triangle
 
-corr_mask = np.zeros_like(feature_corr, dtype = np.bool)
-corr_mask[np.triu_indices_from(corr_mask)] = True
+feature_corr_mask = np.zeros_like(feature_corr, dtype = np.bool)
+feature_corr_mask[np.triu_indices_from(feature_corr_mask)] = True
+
+method_corr_mask = np.zeros_like(method_corr, dtype = np.bool)
+method_corr_mask[np.triu_indices_from(method_corr_mask)] = True
 
 #%% plot figures
 
@@ -649,13 +683,13 @@ cmap = sns.diverging_palette(220, 10, as_cmap = True)
 # plot validation and test scores
 
 f1 = plt.figure(figsize = (8, 4))
-ax = sns.heatmap(heatmap_vscore_mean, cmap = 'Blues', linewidths = 0.5, annot = True, fmt = ".0f")
+ax = sns.heatmap(heatmap_vscore_mean, cmap = 'Reds', linewidths = 0.5, annot = True, fmt = ".0f")
 #ax.set_aspect(1)
 plt.ylabel('Feature selection method')
 plt.xlabel('Number of features')
 
 f2 = plt.figure(figsize = (8, 4))
-ax = sns.heatmap(heatmap_tscore_mean, cmap = 'Blues', linewidths = 0.5, annot = True, fmt = ".0f")
+ax = sns.heatmap(heatmap_tscore_mean, cmap = 'Reds', linewidths = 0.5, annot = True, fmt = ".0f")
 #ax.set_aspect(1)
 plt.ylabel('Feature selection method')
 plt.xlabel('Number of features')
@@ -676,7 +710,7 @@ plt.xlabel('Number of features')
 
 f4 = plt.figure(figsize = (16, 4))
 ax = sns.boxplot(x = 'feature', y = 'ranking', data = feature_boxplot, order = top_features_median['feature'],
-                 whis = 1.5, palette = 'Blues', fliersize = 2, notch = True)
+                 whis = 1.5, palette = 'Reds', fliersize = 2, notch = True)
 #ax = sns.swarmplot(x = 'feature', y = 'ranking', data = feature_boxplot, order = feature_order, 
 #                   size = 2, color = '.3', linewidth = 0)
 ax.set_xticklabels(ax.get_xticklabels(), rotation = 90)
@@ -684,13 +718,13 @@ plt.ylabel('Ranking')
 plt.xlabel('Feature')
 
 f5 = plt.figure(figsize = (24, 4))
-ax = sns.heatmap(heatmap_rankings_mean, cmap = 'Blues', linewidths = 0.5, annot = True, fmt = '.0f')
+ax = sns.heatmap(heatmap_rankings_mean, cmap = 'Reds', linewidths = 0.5, annot = True, fmt = '.0f')
 #ax.set_aspect(1)
 plt.ylabel('Feature selection method')
 plt.xlabel('Feature')
 
 f6 = plt.figure(figsize = (24, 4))
-ax = sns.heatmap(heatmap_rankings_median, cmap = 'Blues', linewidths = 0.5, annot = True, fmt = '.0f')
+ax = sns.heatmap(heatmap_rankings_median, cmap = 'Reds', linewidths = 0.5, annot = True, fmt = '.0f')
 #ax.set_aspect(1)
 plt.ylabel('Feature selection method')
 plt.xlabel('Feature')
@@ -707,11 +741,15 @@ ax = reg_results.gamma.value_counts().plot(kind = 'bar')
 plt.ylabel('Count')
 plt.xlabel('Gamma')
 
-# plot feature correlations
+# plot correlations
 
 f9 = plt.figure(figsize = (16, 16))
-ax = sns.heatmap(feature_corr, mask = corr_mask, cmap = cmap, vmin = -1, vmax = 1, center = 0,
-            square = True, linewidths = 0.5, cbar_kws = {'shrink': 0.5, 'ticks': [-1, 0, 1]})
+ax = sns.heatmap(feature_corr, mask = feature_corr_mask, cmap = cmap, vmin = -1, vmax = 1, center = 0,
+                 square = True, linewidths = 0.5, cbar_kws = {'shrink': 0.5, 'ticks': [-1, 0, 1]})
+
+f10 = plt.figure(figsize = (6, 6))
+ax = sns.heatmap(method_corr, mask = method_corr_mask, cmap = cmap, vmin = -1, vmax = 1, center = 0,
+                 square = True, linewidths = 0.5, cbar_kws = {'shrink': 0.5, 'ticks': [-1, 0, 1]})
 
 #%% save figures and variables
 
@@ -740,6 +778,8 @@ for filetype in ['pdf', 'png', 'eps']:
                bbox_inches = 'tight', pad_inches = 0)
     f9.savefig(model_dir + '\\' + 'feature_corr.' + filetype, dpi = 600, format = filetype,
                bbox_inches = 'tight', pad_inches = 0)
+    f10.savefig(model_dir + '\\' + 'method_corr.' + filetype, dpi = 600, format = filetype,
+                bbox_inches = 'tight', pad_inches = 0)
 
 variables_to_save = {'nan_percent': nan_percent,
                      'grid_param': grid_param,
@@ -756,7 +796,9 @@ variables_to_save = {'nan_percent': nan_percent,
                      'top_results': top_results,
                      'top_summary': top_summary,
                      'feature_corr': feature_corr,
-                     'corr_mask': corr_mask,
+                     'feature_corr_mask': feature_corr_mask,
+                     'method_corr': method_corr,
+                     'method_corr_mask': method_corr_mask,
                      'feature_rankings': feature_rankings,
                      'feature_boxplot': feature_boxplot,
                      'top_features_mean': top_features_mean,
