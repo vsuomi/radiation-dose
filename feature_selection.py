@@ -162,7 +162,7 @@ scaling_type = 'log'
 
 # define number of features
 
-n_features = [5, 10, 15, 20, 25, 30]
+n_features = [5, 10, 15, 20, 25, 30, 35, 40]
 
 # define scorer methods
 
@@ -663,7 +663,7 @@ del top_vscore_mean, top_tscore_mean, top_rankings_mean, top_rankings_median
 
 # correlation matrix
 
-feature_corr = dataframe[feature_labels].corr(method = 'spearman')
+feature_corr = df[feature_labels].corr(method = 'spearman')
 method_corr = heatmap_rankings_median.T.corr(method = 'kendall')
 
 # a mask for the upper triangle
@@ -702,7 +702,7 @@ ax = sns.lineplot(data = reg_summary, x = 'n_features', y = 'test_score',
 ax.grid(True)
 ax.xaxis.set_major_locator(ticker.MultipleLocator(2))
 ax.autoscale(enable = True, axis = 'x', tight = True)
-plt.legend(loc = 'lower right')
+plt.legend(loc = 'upper right')
 plt.ylabel('Mean score')
 plt.xlabel('Number of features')
 
@@ -757,6 +757,19 @@ model_dir = 'Feature selection\\%s_NF%d_NM%d_NI%d' % (timestr, max(n_features), 
 
 if not os.path.exists(model_dir):
     os.makedirs(model_dir)
+    
+with open(model_dir + '\\' + 'parameters.txt', 'w') as text_file:
+    text_file.write('timestr: %s\n' % timestr)
+    text_file.write('Computation time: %.1f min\n' % ((end_time - start_time) / 60))
+    text_file.write('Number of samples: %d\n' % len(df))
+    text_file.write('Number of features: %d\n' % len(feature_labels))
+    text_file.write('methods: %s\n' % str(methods))
+    text_file.write('duplicates: %s\n' % str(duplicates))
+    text_file.write('n_iterations: %d\n' % n_iterations)
+    text_file.write('scaling_type: %s\n' % scaling_type)
+    text_file.write('scoring: %s\n' % scoring)
+    text_file.write('split_ratio: %.1f\n' % split_ratio)
+    text_file.write('cv: %d\n' % cv)
     
 for filetype in ['pdf', 'png', 'eps']:
     
