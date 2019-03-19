@@ -17,6 +17,7 @@ Created on Fri Sep  7 09:30:00 2018
 #%% import necessary packages
 
 import pickle
+import os
 
 #%% save or load variables
 
@@ -33,26 +34,28 @@ def save_load_variables(directory, variables, fname, opt):
         variables: loaded variables
     '''
     
+    file_path = os.path.join(directory, (fname + '.pickle'))
+    
     if opt == 'save':
         
-        pickle_out = open(directory + '\\' + fname + '.pickle', 'wb')
+        pickle_out = open(file_path, 'wb')
         pickle.dump(variables, pickle_out)
         pickle_out.close()
         
     elif opt == 'load':
         
-        pickle_in = open(directory + '\\' + fname + '.pickle', 'rb')
+        pickle_in = open(file_path, 'rb')
         variables = pickle.load(pickle_in)
         pickle_in.close()
         return variables
     
     elif opt == 'add':
         
-        pickle_in = open(directory + '\\' + fname + '.pickle', 'rb')
+        pickle_in = open(file_path, 'rb')
         old_variables = pickle.load(pickle_in)
         pickle_in.close()
         new_variables = {**old_variables, **variables}
-        pickle_out = open(directory + '\\' + fname + '.pickle', 'wb')
+        pickle_out = open(file_path, 'wb')
         pickle.dump(new_variables, pickle_out)
         pickle_out.close()
         
