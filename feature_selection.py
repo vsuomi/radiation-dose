@@ -25,6 +25,8 @@ import os
 import time
 import pandas as pd
 import numpy as np
+import matplotlib
+#matplotlib.use('Agg')  # only for cluster use
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import seaborn as sns
@@ -753,12 +755,13 @@ ax = sns.heatmap(method_corr, mask = method_corr_mask, cmap = cmap, vmin = -1, v
 
 #%% save figures and variables
 
-model_dir = 'Feature selection\\%s_NF%d_NM%d_NI%d' % (timestr, max(n_features), len(methods), n_iterations)
+model_dir = os.path.join('Feature selection', 
+                         ('%s_NF%d_NM%d_NI%d' % (timestr, max(n_features), len(methods), n_iterations)))
 
 if not os.path.exists(model_dir):
     os.makedirs(model_dir)
     
-with open(model_dir + '\\' + 'parameters.txt', 'w') as text_file:
+with open(os.path.join(model_dir, 'parameters.txt'), 'w') as text_file:
     text_file.write('timestr: %s\n' % timestr)
     text_file.write('Computation time: %.1f min\n' % ((end_time - start_time) / 60))
     text_file.write('Number of samples: %d\n' % len(df))
@@ -773,25 +776,25 @@ with open(model_dir + '\\' + 'parameters.txt', 'w') as text_file:
     
 for filetype in ['pdf', 'png', 'eps']:
     
-    f1.savefig(model_dir + '\\' + 'heatmap_vscore_mean.' + filetype, dpi = 600, format = filetype,
+    f1.savefig(os.path.join(model_dir, ('heatmap_vscore_mean.' + filetype)), dpi = 600, format = filetype,
                bbox_inches = 'tight', pad_inches = 0)
-    f2.savefig(model_dir + '\\' + 'heatmap_tscore_mean.' + filetype, dpi = 600, format = filetype,
+    f2.savefig(os.path.join(model_dir, ('heatmap_tscore_mean.' + filetype)), dpi = 600, format = filetype,
                bbox_inches = 'tight', pad_inches = 0)
-    f3.savefig(model_dir + '\\' + 'lineplot_scores.' + filetype, dpi = 600, format = filetype,
+    f3.savefig(os.path.join(model_dir, ('lineplot_scores.' + filetype)), dpi = 600, format = filetype,
                bbox_inches = 'tight', pad_inches = 0)
-    f4.savefig(model_dir + '\\' + 'boxplot_feature_rankings.' + filetype, dpi = 600, format = filetype,
+    f4.savefig(os.path.join(model_dir, ('boxplot_feature_rankings.' + filetype)), dpi = 600, format = filetype,
                bbox_inches = 'tight', pad_inches = 0)
-    f5.savefig(model_dir + '\\' + 'heatmap_rankings_mean.' + filetype, dpi = 600, format = filetype,
+    f5.savefig(os.path.join(model_dir, ('heatmap_rankings_mean.' + filetype)), dpi = 600, format = filetype,
                bbox_inches = 'tight', pad_inches = 0)
-    f6.savefig(model_dir + '\\' + 'heatmap_rankings_median.' + filetype, dpi = 600, format = filetype,
+    f6.savefig(os.path.join(model_dir, ('heatmap_rankings_median.' + filetype)), dpi = 600, format = filetype,
                bbox_inches = 'tight', pad_inches = 0)
-    f7.savefig(model_dir + '\\' + 'parameter_c.' + filetype, dpi = 600, format = filetype,
+    f7.savefig(os.path.join(model_dir, ('parameter_c.' + filetype)), dpi = 600, format = filetype,
                bbox_inches = 'tight', pad_inches = 0)
-    f8.savefig(model_dir + '\\' + 'parameter_gamma.' + filetype, dpi = 600, format = filetype,
+    f8.savefig(os.path.join(model_dir, ('parameter_gamma.' + filetype)), dpi = 600, format = filetype,
                bbox_inches = 'tight', pad_inches = 0)
-    f9.savefig(model_dir + '\\' + 'feature_corr.' + filetype, dpi = 600, format = filetype,
+    f9.savefig(os.path.join(model_dir, ('feature_corr.' + filetype)), dpi = 600, format = filetype,
                bbox_inches = 'tight', pad_inches = 0)
-    f10.savefig(model_dir + '\\' + 'method_corr.' + filetype, dpi = 600, format = filetype,
+    f10.savefig(os.path.join(model_dir, ('method_corr.' + filetype)), dpi = 600, format = filetype,
                 bbox_inches = 'tight', pad_inches = 0)
 
 variables_to_save = {'grid_param': grid_param,
