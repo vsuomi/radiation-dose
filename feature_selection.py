@@ -395,7 +395,7 @@ for iteration in range(0, n_iterations):
             
             relf = RReliefF(n_features = k)
             weights = relf.fit(training_features.values, training_targets.values[:, 0])
-            indices = np.argsort(weights.w_)[::-1]
+            indices = np.flip(np.argsort(weights.w_), 0)[0:k]
             k_features[method] = list(training_features.columns.values[indices[0:k]])
             
             del relf, weights, indices
@@ -705,7 +705,7 @@ ax.grid(True)
 ax.xaxis.set_major_locator(ticker.MultipleLocator(2))
 ax.autoscale(enable = True, axis = 'x', tight = True)
 plt.legend(loc = 'upper right')
-plt.ylabel('Mean score')
+plt.ylabel('Mean error')
 plt.xlabel('Number of features')
 
 # plot feature rankings
