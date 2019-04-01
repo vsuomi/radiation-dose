@@ -335,6 +335,8 @@ for iteration in range(0, n_iterations):
         
         training_features[impute_cons] = imp_cons.fit_transform(training_features[impute_cons])
         testing_features[impute_cons] = imp_cons.transform(testing_features[impute_cons])
+        
+        del imp_mean, imp_mode, imp_cons
     
     # discretise features
     
@@ -354,8 +356,7 @@ for iteration in range(0, n_iterations):
         training_features[disc_labels] = enc.fit_transform(training_features[disc_labels])
         testing_features[disc_labels] = enc.transform(testing_features[disc_labels])
         
-        disc_bins = enc.n_bins_
-        disc_edges = enc.bin_edges_
+        del enc
     
     # scale features
        
@@ -374,6 +375,8 @@ for iteration in range(0, n_iterations):
                                         columns = testing_features.columns,
                                         index = testing_features.index)
         
+        del scaler
+        
     elif scaling_type == 'standard':
         
         scaler = StandardScaler() 
@@ -383,6 +386,8 @@ for iteration in range(0, n_iterations):
         testing_features = pd.DataFrame(scaler.transform(testing_features),
                                         columns = testing_features.columns,
                                         index = testing_features.index)
+        
+        del scaler
     
     # find k best features for each feature selection method
     
