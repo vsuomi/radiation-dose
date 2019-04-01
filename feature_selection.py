@@ -471,7 +471,7 @@ for iteration in range(0, n_iterations):
             del reg_fit, testing_predictions, test_score, res
     
     del n, method
-    del k_features, random_state, impute_values
+    del k_features, random_state
     del training_set, training_features, training_targets
     del testing_set, testing_features, testing_targets
     
@@ -717,7 +717,6 @@ for random_state in random_states:
         del reg_fit, testing_predictions, test_score, res
         
     del n
-    del impute_values
     del training_set, training_features, training_targets
     del testing_set, testing_features, testing_targets
         
