@@ -32,16 +32,17 @@ import matplotlib.ticker as ticker
 import seaborn as sns
 from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.svm import SVR
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler, KBinsDiscretizer
+from sklearn.impute import SimpleImputer
 from sklearn.metrics import mean_squared_error
+
+# import feature selection methods
 
 from sklearn.feature_selection import f_regression, mutual_info_regression
 #from skfeature.function.information_theoretical_based import CMIM
 #from skfeature.function.structure import group_fs, tree_fs
 #from skfeature.function.streaming import alpha_investing
 from sklearn_relief import RReliefF
-
-from save_load_variables import save_load_variables
 
 #%% define logging and data display format
 
@@ -51,7 +52,7 @@ pd.options.mode.chained_assignment = None                                       
 
 #%% read data
 
-df = pd.read_csv(r'radiation_dose_data.csv', sep = ',')
+df = pd.read_csv('radiation_dose_data.csv', sep = ',')
 
 #%% check for duplicates
 
@@ -187,72 +188,19 @@ scorers = [f_regression,
 # define parameters for parameter search
 
 grid_param =    {
-                'kernel': ['rbf'], 
+                'kernel': ['rbf'],
+                'epsilon': [0.1],
                 'C': list(np.logspace(-1, 4, 6)),
                 'gamma': list(np.logspace(-2, 4, 7))
                 }
 
-# define data imputation values
+# impute features
 
-impute_labels = ['Weight', 
-                 'Height', 
-                 'PCI in STEMI', 
-                 'Flap failure', 
-                 'NSTEMI', 
-                 'Diagnostic', 
-                 'UAP', 
-                 'Heart failure', 
-                 'STEMI other',
-                 'Stable AP', 
-                 'Arrhythmia settlement', 
-                 'Multi-vessel disease', 
-                 'LM unprotected', 
-                 'IM', 
-                 'LADa', 
-                 'LADb',
-                 'LADc', 
-                 'LCXa', 
-                 'LCXb', 
-                 'LCXc', 
-                 'LD1', 
-                 'LD2', 
-#                 'Lita',
-                 'LM', 
-                 'LOM1', 
-                 'LOM2', 
-                 'LPD', 
-                 'LPL', 
-#                 'RAM (RV)', 
-                 'RCAa', 
-                 'RCAb',
-                 'RCAc', 
-                 'Rita', 
-                 'RPD', 
-                 'RPL', 
-                 'VGRCA (AG)', 
-                 'VGLCA1 (AG)', 
-#                 'VGLCA2 (AG)', 
-                 'Restenosis', 
-                 'Stent dimension', 
-                 'Ball dimension',
-                 'Additional stenting 1', 
-                 'Additional stenting over 1', 
-                 'Post-stenosis 0%', 
-                 'Post-stenosis 25%', 
-                 'Post-stenosis 60%', 
-                 'Post-stenosis 85%', 
-                 'Post-stenosis 100%',
-                 'Pre-stenosis 100%', 
-                 'Pre-stenosis 85%', 
-                 'Pre-stenosis 60%', 
-                 'AHA score A', 
-                 'AHA score B1',
-                 'AHA score B2', 
-                 'AHA score C', 
-                 'CTO', 
-                 'BSA',
-                 'BMI'
-                 ]
+impute = True
+
+# discretise features
+
+discretise = True
 
 # define regression model
 
@@ -299,33 +247,6 @@ for iteration in range(0, n_iterations):
     training_set, testing_set = train_test_split(df, test_size = split_ratio,
                                                  random_state = random_state)
     
-    impute_values = {}
-    
-    for label in impute_labels:
-        
-        if label in {'Weight', 'Height', 'Age', 'Stent dimension', 'Ball dimension', 'BSA', 'BMI'}:
-            
-            impute_values[label] = training_set[label].mean()
-            
-            training_set[label] = training_set[label].fillna(impute_values[label])
-            testing_set[label] = testing_set[label].fillna(impute_values[label])
-            
-        elif label in {'Additional stenting 1', 'Additional stenting over 1'}:
-            
-            impute_values[label] = 0
-            
-            training_set[label] = training_set[label].fillna(impute_values[label])
-            testing_set[label] = testing_set[label].fillna(impute_values[label])
-            
-        else:
-            
-            impute_values[label] = training_set[label].mode()[0]
-            
-            training_set[label] = training_set[label].fillna(impute_values[label])
-            testing_set[label] = testing_set[label].fillna(impute_values[label])
-            
-    del label
-    
     # define features and targets
     
     training_features = training_set[feature_labels]
@@ -333,6 +254,108 @@ for iteration in range(0, n_iterations):
     
     training_targets = training_set[target_label]
     testing_targets = testing_set[target_label]
+    
+    # impute features
+    
+    if impute:
+    
+        impute_mean =   ['Weight', 
+                         'Height', 
+                         'Stent dimension', 
+                         'Ball dimension', 
+                         'BSA', 
+                         'BMI'
+                         ]
+        
+        impute_mode =   ['PCI in STEMI', 
+                         'Flap failure', 
+                         'NSTEMI', 
+                         'Diagnostic', 
+                         'UAP', 
+                         'Heart failure', 
+                         'STEMI other',
+                         'Stable AP', 
+                         'Arrhythmia settlement', 
+                         'Multi-vessel disease', 
+                         'LM unprotected',
+                         'IM', 
+                         'LADa', 
+                         'LADb',
+                         'LADc', 
+                         'LCXa', 
+                         'LCXb', 
+                         'LCXc', 
+                         'LD1', 
+                         'LD2', 
+                         #'Lita',
+                         'LM', 
+                         'LOM1', 
+                         'LOM2', 
+                         'LPD', 
+                         'LPL', 
+                         #'RAM (RV)', 
+                         'RCAa', 
+                         'RCAb',
+                         'RCAc', 
+                         'Rita', 
+                         'RPD', 
+                         'RPL', 
+                         'VGRCA (AG)', 
+                         'VGLCA1 (AG)', 
+                         #'VGLCA2 (AG)', 
+                         'Restenosis', 
+                         'Post-stenosis 0%', 
+                         'Post-stenosis 25%', 
+                         'Post-stenosis 60%', 
+                         'Post-stenosis 85%', 
+                         'Post-stenosis 100%',
+                         'Pre-stenosis 100%', 
+                         'Pre-stenosis 85%', 
+                         'Pre-stenosis 60%', 
+                         'AHA score A', 
+                         'AHA score B1',
+                         'AHA score B2', 
+                         'AHA score C', 
+                         'CTO'
+                         ]
+        
+        impute_cons =   ['Additional stenting 1', 
+                         'Additional stenting over 1'
+                         ]
+        
+        imp_mean = SimpleImputer(missing_values = np.nan, strategy = 'mean')
+        imp_mode = SimpleImputer(missing_values = np.nan, strategy = 'most_frequent')
+        imp_cons = SimpleImputer(missing_values = np.nan, strategy = 'constant', fill_value = 0)
+        
+        training_features[impute_mean] = imp_mean.fit_transform(training_features[impute_mean])
+        testing_features[impute_mean] = imp_mean.transform(testing_features[impute_mean])
+        
+        training_features[impute_mode] = imp_mode.fit_transform(training_features[impute_mode])
+        testing_features[impute_mode] = imp_mode.transform(testing_features[impute_mode])
+        
+        training_features[impute_cons] = imp_cons.fit_transform(training_features[impute_cons])
+        testing_features[impute_cons] = imp_cons.transform(testing_features[impute_cons])
+    
+    # discretise features
+    
+    if discretise:
+    
+        disc_labels =   ['Weight', 
+                         'Height', 
+                         'Age',
+                         'Stent dimension', 
+                         'Ball dimension', 
+                         'BSA', 
+                         'BMI'
+                         ]
+        
+        enc = KBinsDiscretizer(n_bins = 10, encode = 'ordinal', strategy = 'uniform')
+        
+        training_features[disc_labels] = enc.fit_transform(training_features[disc_labels])
+        testing_features[disc_labels] = enc.transform(testing_features[disc_labels])
+        
+        disc_bins = enc.n_bins_
+        disc_edges = enc.bin_edges_
     
     # scale features
        
@@ -753,13 +776,17 @@ f10 = plt.figure(figsize = (6, 6))
 ax = sns.heatmap(method_corr, mask = method_corr_mask, cmap = cmap, vmin = -1, vmax = 1, center = 0,
                  square = True, linewidths = 0.5, cbar_kws = {'shrink': 0.5, 'ticks': [-1, 0, 1]})
 
-#%% save figures and variables
+#%% save data
+
+# make directory
 
 model_dir = os.path.join('Feature selection', 
                          ('%s_NF%d_NM%d_NI%d' % (timestr, max(n_features), len(methods), n_iterations)))
 
 if not os.path.exists(model_dir):
     os.makedirs(model_dir)
+    
+# save parameters into text file
     
 with open(os.path.join(model_dir, 'parameters.txt'), 'w') as text_file:
     text_file.write('timestr: %s\n' % timestr)
@@ -773,6 +800,8 @@ with open(os.path.join(model_dir, 'parameters.txt'), 'w') as text_file:
     text_file.write('scoring: %s\n' % scoring)
     text_file.write('split_ratio: %.1f\n' % split_ratio)
     text_file.write('cv: %d\n' % cv)
+    
+# save figures
     
 for filetype in ['pdf', 'png', 'eps']:
     
@@ -797,40 +826,9 @@ for filetype in ['pdf', 'png', 'eps']:
     f10.savefig(os.path.join(model_dir, ('method_corr.' + filetype)), dpi = 600, format = filetype,
                 bbox_inches = 'tight', pad_inches = 0)
 
-variables_to_save = {'grid_param': grid_param,
-                     'impute_labels': impute_labels,
-                     'max_iter': max_iter,
-                     'k': k,
-                     'cv': cv,
-                     'scoring': scoring,
-                     'n_features': n_features,
-                     'n_iterations': n_iterations,
-                     'methods': methods,
-                     'reg_results': reg_results,
-                     'reg_summary': reg_summary,
-                     'top_results': top_results,
-                     'top_summary': top_summary,
-                     'feature_corr': feature_corr,
-                     'feature_corr_mask': feature_corr_mask,
-                     'method_corr': method_corr,
-                     'method_corr_mask': method_corr_mask,
-                     'feature_rankings': feature_rankings,
-                     'feature_boxplot': feature_boxplot,
-                     'top_features_mean': top_features_mean,
-                     'top_features_median': top_features_median,
-                     'heatmap_rankings_mean': heatmap_rankings_mean,
-                     'heatmap_rankings_median': heatmap_rankings_median,
-                     'heatmap_vscore_mean': heatmap_vscore_mean,
-                     'heatmap_tscore_mean': heatmap_tscore_mean,
-                     'start_time': start_time,
-                     'end_time': end_time,
-                     'split_ratio': split_ratio,
-                     'timestr': timestr,
-                     'scaling_type': scaling_type,
-                     'model_dir': model_dir,
-                     'df': df,
-                     'df_quality': df_quality,
-                     'feature_labels': feature_labels,
-                     'target_label': target_label}
+# save variables
     
-save_load_variables(model_dir, variables_to_save, 'variables', 'save')
+variable_names = %who_ls DataFrame ndarray list dict str bool int int64 float float64
+variables = dict((name, eval(name)) for name in variable_names)
+    
+pickle.dump(variables, open(os.path.join(model_dir, 'variables.pkl'), 'wb'))
