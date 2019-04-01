@@ -554,33 +554,6 @@ for random_state in random_states:
     training_set, testing_set = train_test_split(df, test_size = split_ratio,
                                                  random_state = random_state)
     
-    impute_values = {}
-    
-    for label in impute_labels:
-        
-        if label in {'Weight', 'Height', 'Age', 'Stent dimension', 'Ball dimension', 'BSA', 'BMI'}:
-            
-            impute_values[label] = training_set[label].mean()
-            
-            training_set[label] = training_set[label].fillna(impute_values[label])
-            testing_set[label] = testing_set[label].fillna(impute_values[label])
-            
-        elif label in {'Additional stenting 1', 'Additional stenting over 1'}:
-            
-            impute_values[label] = 0
-            
-            training_set[label] = training_set[label].fillna(impute_values[label])
-            testing_set[label] = testing_set[label].fillna(impute_values[label])
-            
-        else:
-            
-            impute_values[label] = training_set[label].mode()[0]
-            
-            training_set[label] = training_set[label].fillna(impute_values[label])
-            testing_set[label] = testing_set[label].fillna(impute_values[label])
-            
-    del label
-    
     # define features and targets
     
     training_features = training_set[feature_labels]
@@ -588,6 +561,109 @@ for random_state in random_states:
     
     training_targets = training_set[target_label]
     testing_targets = testing_set[target_label]
+    
+    # impute features
+    
+    if impute:
+    
+        impute_mean =   ['Weight', 
+                         'Height', 
+                         'Stent dimension', 
+                         'Ball dimension', 
+                         'BSA', 
+                         'BMI'
+                         ]
+        
+        impute_mode =   ['PCI in STEMI', 
+                         'Flap failure', 
+                         'NSTEMI', 
+                         'Diagnostic', 
+                         'UAP', 
+                         'Heart failure', 
+                         'STEMI other',
+                         'Stable AP', 
+                         'Arrhythmia settlement', 
+                         'Multi-vessel disease', 
+                         'LM unprotected',
+                         'IM', 
+                         'LADa', 
+                         'LADb',
+                         'LADc', 
+                         'LCXa', 
+                         'LCXb', 
+                         'LCXc', 
+                         'LD1', 
+                         'LD2', 
+                         #'Lita',
+                         'LM', 
+                         'LOM1', 
+                         'LOM2', 
+                         'LPD', 
+                         'LPL', 
+                         #'RAM (RV)', 
+                         'RCAa', 
+                         'RCAb',
+                         'RCAc', 
+                         'Rita', 
+                         'RPD', 
+                         'RPL', 
+                         'VGRCA (AG)', 
+                         'VGLCA1 (AG)', 
+                         #'VGLCA2 (AG)', 
+                         'Restenosis', 
+                         'Post-stenosis 0%', 
+                         'Post-stenosis 25%', 
+                         'Post-stenosis 60%', 
+                         'Post-stenosis 85%', 
+                         'Post-stenosis 100%',
+                         'Pre-stenosis 100%', 
+                         'Pre-stenosis 85%', 
+                         'Pre-stenosis 60%', 
+                         'AHA score A', 
+                         'AHA score B1',
+                         'AHA score B2', 
+                         'AHA score C', 
+                         'CTO'
+                         ]
+        
+        impute_cons =   ['Additional stenting 1', 
+                         'Additional stenting over 1'
+                         ]
+        
+        imp_mean = SimpleImputer(missing_values = np.nan, strategy = 'mean')
+        imp_mode = SimpleImputer(missing_values = np.nan, strategy = 'most_frequent')
+        imp_cons = SimpleImputer(missing_values = np.nan, strategy = 'constant', fill_value = 0)
+        
+        training_features[impute_mean] = imp_mean.fit_transform(training_features[impute_mean])
+        testing_features[impute_mean] = imp_mean.transform(testing_features[impute_mean])
+        
+        training_features[impute_mode] = imp_mode.fit_transform(training_features[impute_mode])
+        testing_features[impute_mode] = imp_mode.transform(testing_features[impute_mode])
+        
+        training_features[impute_cons] = imp_cons.fit_transform(training_features[impute_cons])
+        testing_features[impute_cons] = imp_cons.transform(testing_features[impute_cons])
+        
+        del imp_mean, imp_mode, imp_cons
+    
+    # discretise features
+    
+    if discretise:
+    
+        disc_labels =   ['Weight', 
+                         'Height', 
+                         'Age',
+                         'Stent dimension', 
+                         'Ball dimension', 
+                         'BSA', 
+                         'BMI'
+                         ]
+        
+        enc = KBinsDiscretizer(n_bins = 10, encode = 'ordinal', strategy = 'uniform')
+        
+        training_features[disc_labels] = enc.fit_transform(training_features[disc_labels])
+        testing_features[disc_labels] = enc.transform(testing_features[disc_labels])
+        
+        del enc
     
     # scale features
        
