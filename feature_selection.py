@@ -42,7 +42,8 @@ from sklearn.feature_selection import f_regression, mutual_info_regression
 #from skfeature.function.information_theoretical_based import CMIM
 #from skfeature.function.structure import group_fs, tree_fs
 #from skfeature.function.streaming import alpha_investing
-from sklearn_relief import RReliefF
+#from sklearn_relief import RReliefF
+from skrebate import ReliefF, SURF, SURFstar, MultiSURF, MultiSURFstar
 
 #%% define logging and data display format
 
@@ -173,7 +174,11 @@ methods =   ['FREG',
              'MIR',
              'PEAR',
              'SPEA',
-             'RELF'
+             'RELF', 
+             'SURF', 
+             'SURFS', 
+             'MSURF', 
+             'MSURFS'
              ]
 
 # define scorer functions
@@ -182,7 +187,11 @@ scorers = [f_regression,
            mutual_info_regression,
            'pearson',
            'spearman',
-           RReliefF
+           ReliefF,
+           SURF,
+           SURFstar,
+           MultiSURF,
+           MultiSURFstar,
            ]
 
 # define parameters for parameter search
@@ -257,7 +266,7 @@ for iteration in range(0, n_iterations):
     
     # impute features
     
-    if impute:
+    if impute == True:
     
         impute_mean =   ['Weight', 
                          'Height', 
@@ -340,7 +349,7 @@ for iteration in range(0, n_iterations):
     
     # discretise features
     
-    if discretise:
+    if discretise == True:
     
         disc_labels =   ['Weight', 
                          'Height', 
@@ -368,24 +377,16 @@ for iteration in range(0, n_iterations):
     elif scaling_type == 'minmax':
         
         scaler = MinMaxScaler(feature_range = (0, 1)) 
-        training_features = pd.DataFrame(scaler.fit_transform(training_features),
-                                         columns = training_features.columns,
-                                         index = training_features.index)
-        testing_features = pd.DataFrame(scaler.transform(testing_features),
-                                        columns = testing_features.columns,
-                                        index = testing_features.index)
+        training_features[feature_labels] = scaler.fit_transform(training_features[feature_labels])
+        testing_features[feature_labels] = scaler.transform(testing_features[feature_labels])
         
         del scaler
         
     elif scaling_type == 'standard':
         
         scaler = StandardScaler() 
-        training_features = pd.DataFrame(scaler.fit_transform(training_features),
-                                         columns = training_features.columns,
-                                         index = training_features.index)
-        testing_features = pd.DataFrame(scaler.transform(testing_features),
-                                        columns = testing_features.columns,
-                                        index = testing_features.index)
+        training_features[feature_labels] = scaler.fit_transform(training_features[feature_labels])
+        testing_features[feature_labels] = scaler.transform(testing_features[feature_labels])
         
         del scaler
     
@@ -419,15 +420,14 @@ for iteration in range(0, n_iterations):
             
             del fcorr, scores
             
-        elif method in ('RELF'):
+        elif method in ('RELF', 'SURF', 'SURFS', 'MSURF', 'MSURFS'):
             
-            relf = RReliefF(n_features = k)
-            weights = relf.fit(training_features.values, training_targets.values[:, 0])
-            indices = np.flip(np.argsort(weights.w_), 0)[0:k]
+            rebate = scorer(n_features_to_select = k, n_jobs = -1)
+            reg = rebate.fit(training_features.values, training_targets.values[:, 0])
+            indices = np.argsort(reg.feature_importances_)[::-1]
             k_features[method] = list(training_features.columns.values[indices[0:k]])
             
-            del relf, weights, indices
-            
+            del rebate, reg, indices   
             
     del scorer, method
     
@@ -564,7 +564,7 @@ for random_state in random_states:
     
     # impute features
     
-    if impute:
+    if impute == True:
     
         impute_mean =   ['Weight', 
                          'Height', 
@@ -647,7 +647,7 @@ for random_state in random_states:
     
     # discretise features
     
-    if discretise:
+    if discretise == True:
     
         disc_labels =   ['Weight', 
                          'Height', 
@@ -675,22 +675,14 @@ for random_state in random_states:
     elif scaling_type == 'minmax':
         
         scaler = MinMaxScaler(feature_range = (0, 1)) 
-        training_features = pd.DataFrame(scaler.fit_transform(training_features),
-                                         columns = training_features.columns,
-                                         index = training_features.index)
-        testing_features = pd.DataFrame(scaler.transform(testing_features),
-                                        columns = testing_features.columns,
-                                        index = testing_features.index)
+        training_features[feature_labels] = scaler.fit_transform(training_features[feature_labels])
+        testing_features[feature_labels] = scaler.transform(testing_features[feature_labels])
         
     elif scaling_type == 'standard':
         
         scaler = StandardScaler() 
-        training_features = pd.DataFrame(scaler.fit_transform(training_features),
-                                         columns = training_features.columns,
-                                         index = training_features.index)
-        testing_features = pd.DataFrame(scaler.transform(testing_features),
-                                        columns = testing_features.columns,
-                                        index = testing_features.index)
+        training_features[feature_labels] = scaler.fit_transform(training_features[feature_labels])
+        testing_features[feature_labels] = scaler.transform(testing_features[feature_labels])
     
     for n in n_features:
         
