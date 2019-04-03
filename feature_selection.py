@@ -23,6 +23,7 @@ Created on Fri Mar  8 10:10:57 2019
 
 import os
 import time
+import pickle
 import pandas as pd
 import numpy as np
 import matplotlib
@@ -868,6 +869,8 @@ with open(os.path.join(model_dir, 'parameters.txt'), 'w') as text_file:
     text_file.write('methods: %s\n' % str(methods))
     text_file.write('duplicates: %s\n' % str(duplicates))
     text_file.write('n_iterations: %d\n' % n_iterations)
+    text_file.write('discretise: %s\n' % str(discretise))
+    text_file.write('impute: %s\n' % str(impute))
     text_file.write('scaling_type: %s\n' % scaling_type)
     text_file.write('scoring: %s\n' % scoring)
     text_file.write('split_ratio: %.1f\n' % split_ratio)
