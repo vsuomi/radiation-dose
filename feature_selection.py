@@ -200,8 +200,8 @@ scorers = [f_regression,
 grid_param =    {
                 'kernel': ['rbf'],
                 'epsilon': [0.1],
-                'C': list(np.logspace(-1, 4, 6)),
-                'gamma': list(np.logspace(-2, 4, 7))
+                'C': list(np.logspace(0, 5, 6)),
+                'gamma': list(np.logspace(-1, 3, 5))
                 }
 
 # impute features
