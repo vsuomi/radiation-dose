@@ -70,6 +70,8 @@ df['BMI'] = df['Weight'] / (df['Height'] / 1e2).pow(2)
 df_quality = pd.DataFrame(df.isnull().mean() * 100, columns = ['NaN ratio'])
 df_quality['Mean'] = df.mean()
 df_quality['Median'] = df.median()
+df_quality['Min'] = df.min()
+df_quality['Max'] = df.max()
 df_quality['SD'] = df.std()
 df_quality['Sum'] = df.sum()
 
