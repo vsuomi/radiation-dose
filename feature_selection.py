@@ -536,7 +536,7 @@ top_features_median['method'] = 'TOPN'
 #%% train model with only top features
 
 top_results = pd.DataFrame()
-random_states = reg_results.random_state.unique()
+random_states = reg_results.groupby(['iteration'])['random_state'].mean().values
 iteration = 0
 
 time_stamp = time.time()
