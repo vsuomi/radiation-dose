@@ -778,7 +778,9 @@ method_corr_mask[np.triu_indices_from(method_corr_mask)] = True
 
 # define colormap
 
-cmap = sns.diverging_palette(220, 10, as_cmap = True)
+#cmap = sns.diverging_palette(220, 10, as_cmap = True)
+#cmap = sns.diverging_palette(250, 10, as_cmap = True)
+cmap = 'RdGy'
 
 # plot validation and test scores
 
@@ -794,11 +796,11 @@ ax = sns.heatmap(heatmap_tscore_mean, cmap = 'Reds', linewidths = 0.5, annot = T
 plt.ylabel('Feature selection method')
 plt.xlabel('Number of features')
 
-f3 = plt.figure()
+f3 = plt.figure(figsize = (6, 4))
 ax = sns.lineplot(data = reg_summary, x = 'n_features', y = 'validation_score', 
-                  label = 'Validation', ci = 95)
+                  label = 'Validation', ci = 95, color = 'orangered')
 ax = sns.lineplot(data = reg_summary, x = 'n_features', y = 'test_score', 
-                  label = 'Test', ci = 95)
+                  label = 'Test', ci = 95, color = 'k')
 ax.grid(True)
 ax.xaxis.set_major_locator(ticker.MultipleLocator(2))
 ax.autoscale(enable = True, axis = 'x', tight = True)

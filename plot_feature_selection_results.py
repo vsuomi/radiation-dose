@@ -45,7 +45,8 @@ del variables
 # define colormap
 
 #cmap = sns.diverging_palette(220, 10, as_cmap = True)
-cmap = sns.diverging_palette(250, 10, as_cmap = True)
+#cmap = sns.diverging_palette(250, 10, as_cmap = True)
+cmap = 'RdGy'
 
 # plot validation and test scores
 
@@ -61,11 +62,11 @@ ax = sns.heatmap(heatmap_tscore_mean, cmap = 'Reds', linewidths = 0.5, annot = T
 plt.ylabel('Feature selection method')
 plt.xlabel('Number of features')
 
-f3 = plt.figure()
+f3 = plt.figure(figsize = (6, 4))
 ax = sns.lineplot(data = reg_summary, x = 'n_features', y = 'validation_score', 
-                  label = 'Validation', ci = 95)
+                  label = 'Validation', ci = 95, color = 'orangered')
 ax = sns.lineplot(data = reg_summary, x = 'n_features', y = 'test_score', 
-                  label = 'Test', ci = 95)
+                  label = 'Test', ci = 95, color = 'k')
 ax.grid(True)
 ax.xaxis.set_major_locator(ticker.MultipleLocator(2))
 ax.autoscale(enable = True, axis = 'x', tight = True)
@@ -125,22 +126,22 @@ if not os.path.exists(model_dir):
     
 for filetype in ['pdf', 'png', 'eps']:
     
-#    f1.savefig(os.path.join(model_dir, ('heatmap_vscore_mean.' + filetype)), dpi = 600, format = filetype,
-#               bbox_inches = 'tight', pad_inches = 0)
-#    f2.savefig(os.path.join(model_dir, ('heatmap_tscore_mean.' + filetype)), dpi = 600, format = filetype,
-#               bbox_inches = 'tight', pad_inches = 0)
-#    f3.savefig(os.path.join(model_dir, ('lineplot_scores.' + filetype)), dpi = 600, format = filetype,
-#               bbox_inches = 'tight', pad_inches = 0)
-#    f4.savefig(os.path.join(model_dir, ('boxplot_feature_rankings.' + filetype)), dpi = 600, format = filetype,
-#               bbox_inches = 'tight', pad_inches = 0)
-#    f5.savefig(os.path.join(model_dir, ('heatmap_rankings_mean.' + filetype)), dpi = 600, format = filetype,
-#               bbox_inches = 'tight', pad_inches = 0)
-#    f6.savefig(os.path.join(model_dir, ('heatmap_rankings_median.' + filetype)), dpi = 600, format = filetype,
-#               bbox_inches = 'tight', pad_inches = 0)
-#    f7.savefig(os.path.join(model_dir, ('parameter_c.' + filetype)), dpi = 600, format = filetype,
-#               bbox_inches = 'tight', pad_inches = 0)
-#    f8.savefig(os.path.join(model_dir, ('parameter_gamma.' + filetype)), dpi = 600, format = filetype,
-#               bbox_inches = 'tight', pad_inches = 0)
+    f1.savefig(os.path.join(model_dir, ('heatmap_vscore_mean.' + filetype)), dpi = 600, format = filetype,
+               bbox_inches = 'tight', pad_inches = 0)
+    f2.savefig(os.path.join(model_dir, ('heatmap_tscore_mean.' + filetype)), dpi = 600, format = filetype,
+               bbox_inches = 'tight', pad_inches = 0)
+    f3.savefig(os.path.join(model_dir, ('lineplot_scores.' + filetype)), dpi = 600, format = filetype,
+               bbox_inches = 'tight', pad_inches = 0)
+    f4.savefig(os.path.join(model_dir, ('boxplot_feature_rankings.' + filetype)), dpi = 600, format = filetype,
+               bbox_inches = 'tight', pad_inches = 0)
+    f5.savefig(os.path.join(model_dir, ('heatmap_rankings_mean.' + filetype)), dpi = 600, format = filetype,
+               bbox_inches = 'tight', pad_inches = 0)
+    f6.savefig(os.path.join(model_dir, ('heatmap_rankings_median.' + filetype)), dpi = 600, format = filetype,
+               bbox_inches = 'tight', pad_inches = 0)
+    f7.savefig(os.path.join(model_dir, ('parameter_c.' + filetype)), dpi = 600, format = filetype,
+               bbox_inches = 'tight', pad_inches = 0)
+    f8.savefig(os.path.join(model_dir, ('parameter_gamma.' + filetype)), dpi = 600, format = filetype,
+               bbox_inches = 'tight', pad_inches = 0)
     f9.savefig(os.path.join(model_dir, ('feature_corr.' + filetype)), dpi = 600, format = filetype,
                bbox_inches = 'tight', pad_inches = 0)
     f10.savefig(os.path.join(model_dir, ('method_corr.' + filetype)), dpi = 600, format = filetype,
