@@ -802,7 +802,7 @@ ax = sns.lineplot(data = reg_summary, x = 'n_features', y = 'validation_score',
 ax = sns.lineplot(data = reg_summary, x = 'n_features', y = 'test_score', 
                   label = 'Test', ci = 95, color = 'k')
 ax.grid(True)
-ax.xaxis.set_major_locator(ticker.MultipleLocator(2))
+ax.xaxis.set_major_locator(ticker.MultipleLocator(5))
 ax.autoscale(enable = True, axis = 'x', tight = True)
 plt.legend(loc = 'upper right')
 plt.ylabel('Mean error')
