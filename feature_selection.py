@@ -819,14 +819,16 @@ ax.set_xticklabels(ax.get_xticklabels(), rotation = 90)
 plt.ylabel('Ranking')
 plt.xlabel('Feature')
 
-f5 = plt.figure(figsize = (24, 4))
-ax = sns.heatmap(heatmap_rankings_mean, cmap = 'Reds', linewidths = 0.5, annot = True, fmt = '.0f')
+f5 = plt.figure(figsize = (22, 4))
+ax = sns.heatmap(heatmap_rankings_mean, cmap = 'Reds', linewidths = 0.5, annot = True, 
+                 fmt = '.0f', cbar_kws = {'pad': 0.01})
 #ax.set_aspect(1)
 plt.ylabel('Feature selection method')
 plt.xlabel('Feature')
 
-f6 = plt.figure(figsize = (24, 4))
-ax = sns.heatmap(heatmap_rankings_median, cmap = 'Reds', linewidths = 0.5, annot = True, fmt = '.0f')
+f6 = plt.figure(figsize = (22, 4))
+ax = sns.heatmap(heatmap_rankings_median, cmap = 'Reds', linewidths = 0.5, annot = True, 
+                 fmt = '.0f', cbar_kws = {'pad': 0.01})
 #ax.set_aspect(1)
 plt.ylabel('Feature selection method')
 plt.xlabel('Feature')
@@ -847,11 +849,13 @@ plt.xlabel('Gamma')
 
 f9 = plt.figure(figsize = (16, 16))
 ax = sns.heatmap(feature_corr, mask = feature_corr_mask, cmap = cmap, vmin = -1, vmax = 1, center = 0,
-                 square = True, linewidths = 0.5, cbar_kws = {'shrink': 0.5, 'ticks': [-1, 0, 1]})
+                 square = True, linewidths = 0.5, cbar_kws = {'shrink': 0.3, 'ticks': [-1, 0, 1],
+                                                              'pad': -0.05})
 
 f10 = plt.figure(figsize = (6, 6))
 ax = sns.heatmap(method_corr, mask = method_corr_mask, cmap = cmap, vmin = -1, vmax = 1, center = 0,
-                 square = True, linewidths = 0.5, cbar_kws = {'shrink': 0.5, 'ticks': [-1, 0, 1]})
+                 square = True, linewidths = 0.5, cbar_kws = {'shrink': 0.5, 'ticks': [-1, 0, 1],
+                                                              'pad': -0.05})
 
 #%% save data
 
