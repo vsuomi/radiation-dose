@@ -279,7 +279,9 @@ for iteration in range(0, n_iterations):
                          'BMI'
                          ]
         
-        impute_mode =   ['PCI in STEMI', 
+        impute_mode =   []
+        
+        impute_cons =   ['PCI in STEMI', 
                          'Flap failure', 
                          'NSTEMI', 
                          'Diagnostic', 
@@ -315,7 +317,9 @@ for iteration in range(0, n_iterations):
                          'VGRCA (AG)', 
                          'VGLCA1 (AG)', 
                          #'VGLCA2 (AG)', 
-                         'Restenosis', 
+                         'Restenosis',
+                         'Additional stenting 1', 
+                         'Additional stenting over 1',
                          'Post-stenosis 0%', 
                          'Post-stenosis 25%', 
                          'Post-stenosis 60%', 
@@ -329,10 +333,6 @@ for iteration in range(0, n_iterations):
                          'AHA score B2', 
                          'AHA score C', 
                          'CTO'
-                         ]
-        
-        impute_cons =   ['Additional stenting 1', 
-                         'Additional stenting over 1'
                          ]
         
         imp_mean = SimpleImputer(missing_values = np.nan, strategy = 'mean')
