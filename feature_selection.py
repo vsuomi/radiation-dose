@@ -65,6 +65,10 @@ duplicates = any(df.duplicated())
 df['BSA'] = 0.007184 * df['Weight'].pow(0.425) * df['Height'].pow(0.725)
 df['BMI'] = df['Weight'] / (df['Height'] / 1e2).pow(2)
 
+#%% drop nan values based on column name(s)
+
+df = df.dropna(subset = ['Weight'])
+
 #%% calculate data statistics
 
 df_stats = pd.DataFrame(df.isnull().mean() * 100, columns = ['NaN ratio'])
