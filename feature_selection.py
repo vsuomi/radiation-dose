@@ -346,8 +346,8 @@ for iteration in range(0, n_iterations):
         training_features[impute_mean] = imp_mean.fit_transform(training_features[impute_mean])
         testing_features[impute_mean] = imp_mean.transform(testing_features[impute_mean])
         
-        training_features[impute_mode] = imp_mode.fit_transform(training_features[impute_mode])
-        testing_features[impute_mode] = imp_mode.transform(testing_features[impute_mode])
+#        training_features[impute_mode] = imp_mode.fit_transform(training_features[impute_mode])
+#        testing_features[impute_mode] = imp_mode.transform(testing_features[impute_mode])
         
         training_features[impute_cons] = imp_cons.fit_transform(training_features[impute_cons])
         testing_features[impute_cons] = imp_cons.transform(testing_features[impute_cons])
@@ -581,7 +581,9 @@ for random_state in random_states:
                          'BMI'
                          ]
         
-        impute_mode =   ['PCI in STEMI', 
+        impute_mode =   []
+        
+        impute_cons =   ['PCI in STEMI', 
                          'Flap failure', 
                          'NSTEMI', 
                          'Diagnostic', 
@@ -617,7 +619,9 @@ for random_state in random_states:
                          'VGRCA (AG)', 
                          'VGLCA1 (AG)', 
                          #'VGLCA2 (AG)', 
-                         'Restenosis', 
+                         'Restenosis',
+                         'Additional stenting 1', 
+                         'Additional stenting over 1',
                          'Post-stenosis 0%', 
                          'Post-stenosis 25%', 
                          'Post-stenosis 60%', 
@@ -633,10 +637,6 @@ for random_state in random_states:
                          'CTO'
                          ]
         
-        impute_cons =   ['Additional stenting 1', 
-                         'Additional stenting over 1'
-                         ]
-        
         imp_mean = SimpleImputer(missing_values = np.nan, strategy = 'mean')
         imp_mode = SimpleImputer(missing_values = np.nan, strategy = 'most_frequent')
         imp_cons = SimpleImputer(missing_values = np.nan, strategy = 'constant', fill_value = 0)
@@ -644,8 +644,8 @@ for random_state in random_states:
         training_features[impute_mean] = imp_mean.fit_transform(training_features[impute_mean])
         testing_features[impute_mean] = imp_mean.transform(testing_features[impute_mean])
         
-        training_features[impute_mode] = imp_mode.fit_transform(training_features[impute_mode])
-        testing_features[impute_mode] = imp_mode.transform(testing_features[impute_mode])
+#        training_features[impute_mode] = imp_mode.fit_transform(training_features[impute_mode])
+#        testing_features[impute_mode] = imp_mode.transform(testing_features[impute_mode])
         
         training_features[impute_cons] = imp_cons.fit_transform(training_features[impute_cons])
         testing_features[impute_cons] = imp_cons.transform(testing_features[impute_cons])
